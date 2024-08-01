@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDoList</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ToDo</h1>
+        <form class="add_text">
+            <input class="write_text" type="text" placeholder="пиши меня">
+            <button class="submit_text">зжимай</button>
+        </form>
+
+        <form class="change-list">
+            <div class="check-all">
+                <input class="check-all_checkbox" type="checkbox">
+                <p class="ckeck-all_text">Все сделал</p>
+            </div>
+            
+            <button class="change-list_remove">режъ активных</button>
+        </form>
+       
+        <ul class="todo-list">
+            <li data-id=0 class="todo-list_item">
+                <input type="checkbox" id="checkbox">
+                <p class="todo-list_text">Lorem ipsum, dolor sit amet consectetur adipisicing elit.</p>
+                <input type="text" class="todo-list_reset-text" placeholder="перепиши меня" value="Lorem ipsum, dolor sit amet consectetur adipisicing elit.">
+                <button class="todo-list-button">X</button>
+            </li>
+        </ul>
+
+        <div class="filter">
+            <button class="renderAll">Все</button>
+            <button class="renderComplited">Выполненные</button>
+            <button class="renderNoComplited">Не выполненные</button>
+        </div>
+        <div class="pagination">
+            <!--<button class="page active">1</button>-->
+        </div>
+    </div>
+    
+    
+    <script src="script.js"></script>
+</body>
+</html>
