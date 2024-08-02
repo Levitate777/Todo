@@ -20,6 +20,7 @@ let totalPage = 1
 let currentPage = 1
 let paginationArr = [] //глобальный массив постраничных записей
 let arrayAllTodo = [] //глобальный массив всех тудушек
+let filter = "all" | "executed" | "unfulfilled"
 
 /* КЛАСС ДЛЯ ФОРМИРОВАНИЯ ОБЪЕКТА ТУДУШКИ */
 class Todoitem {
@@ -47,6 +48,7 @@ const addTodo = (e) => { //общее добавление
     inputTodo.value = ''
     inputTodo.focus
     pageCounter(arrayAllTodo)
+    currentPage = currentPage === totalPage ? currentPage : ++currentPage
     render()
   }
 }
@@ -76,8 +78,23 @@ const changePage = (e) => { //изменение текущей страницы
 
 /* РЕНДЕР */
 const render = () => { //общий рендер
+  if (filter === 'all' || filter === 0) {
+    pageCounter(arrayAllTodo)
     renderTodo()
-    renderPagination()
+  } else {
+    currentPage = 1
+  }
+  if (filter === 'executed') {
+    const executedArr = arrayAllTodo.filter(item => item.isExecuted === true)
+    pageCounter(executedArr)
+    renderTodo(executedArr)
+  }
+  if (filter === 'unfulfilled') {
+    const unfulfilledArr = arrayAllTodo.filter(item => item.isExecuted === false)
+    pageCounter(unfulfilledArr)
+    renderTodo(unfulfilledArr)
+  }
+  renderPagination()
 }
 const renderPagination = () => { //с 0 отрисовывает элементы страниц
     paginationDiv.innerHTML = ""
@@ -109,20 +126,17 @@ const renderTodo = (array = arrayAllTodo) => { //общий рендер туд�
 }
 const renderTab = (e) => { //функция табуляции
   if (e.target.matches('.renderAll')) {
-    pageCounter(arrayAllTodo)
-    renderTodo()
+    filter = 'all'
+    render()
   }
   if (e.target.matches('.renderExecuted')) {
-    const executedArr = arrayAllTodo.filter(item => item.isExecuted === true)
-    pageCounter(executedArr)
-    renderTodo(executedArr)
+    filter = 'executed'
+    render()
   }
   if (e.target.matches('.renderUnfulfilled')) {
-    const unfulfilledArr = arrayAllTodo.filter(item => item.isExecuted === false)
-    pageCounter(unfulfilledArr)
-    renderTodo(unfulfilledArr)
+    filter = 'unfulfilled'
+    render()
   }
-  renderPagination()
 }
 
 /* ПЕРВОНАЧАЛЬНЫЙ РЕНДЕР */
@@ -131,65 +145,57 @@ render()
 
 /* ОБЩИЕ ФУНКЦИИ ДЛЯ РАБОТЫ С ОДНОЙ ЗАПИСЬЮ */
 const changeTask = (e) =>{
-    const todoId = parseInt(e.target.parentNode.dataset.id)
-    if (e.target.matches('.todo-list_text') && e.detail === DOUBLE_CLIK) {
-        const todoItemReset = e.target.nextElementSibling
-        const textTodoOld = e.target
-        todoItemReset.style = "display: block"
-        textTodoOld.style = "display: none"
-        todoItemReset.focus()
-    }
-    if (e.target.matches('.checkbox')) {
-        invertCheckbox(todoId)
-    }
-    if (e.target.matches('.todo-list-button')) {
-        removeElementArr(todoId)
-    }
+  const todoId = parseInt(e.target.parentNode.dataset.id)
+  const arrElementId = arrayAllTodo.findIndex(item => item.id === todoId)
+  if (e.target.matches('.todo-list_text') && e.detail === DOUBLE_CLIK) {
+    const todoItemReset = e.target.nextElementSibling
+    const textTodoOld = e.target
+    todoItemReset.style = "display: block"
+    textTodoOld.style = "display: none"
+    todoItemReset.focus()
+  }
+  if (e.target.matches('.checkbox')) {
+    arrayAllTodo[arrElementId].isExecuted = !arrayAllTodo[arrElementId].isExecuted
+    render()
+  }
+  if (e.target.matches('.todo-list-button')) {
+    const newArr = arrayAllTodo.filter(item => item.id !== todoId)
+    arrayAllTodo = newArr
+    render()   
+  }
 }
 const edit = (e) => { //подготовка к перезаписи
-    const todoLi = e.target.parentNode
-    const todoId = parseInt(todoLi.dataset.id)
-    if (e.keyCode === ESC_KEY) { 
+  const todoLi = e.target.parentNode
+  const todoId = parseInt(todoLi.dataset.id)
+  const arrElementId = arrayAllTodo.findIndex(item => item.id === todoId)
+  if (e.keyCode === ESC_KEY) { 
+    renderTodo()
+  } else {
+    if ((e.keyCode === ENTER_KEY || e.type === 'blur') &&
+      e.target.matches('.todo-list_reset-text')) {
+      const todoItem = todoLi.querySelector('.todo-list_reset-text')
+      const text = validationText(todoItem.value)
+      if (text.length === 0) {
         renderTodo()
-    } else {
-        if ((e.keyCode === ENTER_KEY || e.type === 'blur') &&
-            e.target.matches('.todo-list_reset-text')) {
-            const todoItem = todoLi.querySelector('.todo-list_reset-text')
-            const text = validationText(todoItem.value)
-            if (text.length === 0) {
-                renderTodo()
-            } else {
-                if (text.length > MAX_LENGTH_TODO) {
-                    const text = text.slice(0,MAX_LENGTH_TODO)
-                    resetText(text, todoId)
-                }
-                resetText(text, todoId)
-            }
+      } else {
+        if (text.length > MAX_LENGTH_TODO) {
+          const text = text.slice(0,MAX_LENGTH_TODO)
+          arrayAllTodo[arrElementId].text = text
         }
+        arrayAllTodo[arrElementId].text = text
+        render()
+      }
     }
+  }
 }
 
 /* ФУНКЦИИ ДЛЯ ЛОКАЛЬНОЙ РАБОТЫ */
-const resetText = (text, id) => { //изменение текста туду
-    const arrElementId = arrayAllTodo.findIndex(item => item.id === id)
-    arrayAllTodo[arrElementId].text = text
-    render()
-}
-const invertCheckbox = (id) => { //меняем состояние выполнения
-    const arrElementId = arrayAllTodo.findIndex(item => item.id === id)
-    arrayAllTodo[arrElementId].isExecuted = !arrayAllTodo[arrElementId].isExecuted
-    render()
-}
-const removeElementArr = (id) => { //удаляем тудушку
-    const newArr = arrayAllTodo.filter(item => item.id !== id)
-    arrayAllTodo = newArr
-    render()
-}
 const removeAllCheckElementArr = (e) => { //удаление всех активных
     e.preventDefault()
     const newArr = arrayAllTodo.filter(item => item.isExecuted !== true)
     arrayAllTodo = newArr
     pageCounter(arrayAllTodo)
+    currentPage = 1
     render()
 }
 const checkAllElementArr = (e) => { //сделать все активными/неактивными
@@ -203,7 +209,7 @@ buttonSubmit.addEventListener('click', addTodo) //для добавления т
 inputTodo.addEventListener('keydown', inputSubmit) //добавление по нажатию на ENTER
 containerTodo.addEventListener('click', changeTask) //слушатель для изменения текста туду
 containerTodo.addEventListener('keyup', edit) //слушатель для реагирования на редактирование
-containerTodo.addEventListener('blur', edit, true)
+containerTodo.addEventListener('blur', edit, true) //если нажал не по полю ввода
 removeAllActive.addEventListener('click', removeAllCheckElementArr) //удалить все активные
 checkAll.addEventListener('click', checkAllElementArr) //пометка всех как активных/нективных
 btnsTabs.addEventListener('click', renderTab) // общий слушатель для табуляции
