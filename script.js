@@ -37,7 +37,7 @@ let arr = [ // массив, в котором все тудушки
     {
         id: 1,
         text: '2 amet consectetur adipisicing elit.',
-        check: false,
+        check: true,
     },
     {
         id: 2,
@@ -47,7 +47,7 @@ let arr = [ // массив, в котором все тудушки
     {
         id: 3,
         text: '4 Lorem ipsum, dolor sit amet consectetur adipisicing elit.',
-        check: false,
+        check: true,
     },
     {
         id: 4,
@@ -62,7 +62,7 @@ let arr = [ // массив, в котором все тудушки
     {
         id: 6,
         text: '7 Lorem ipsum, dolor sit amet consectetur adipisicing elit.',
-        check: false,
+        check: true,
     },
     {
         id: 7,
@@ -72,11 +72,11 @@ let arr = [ // массив, в котором все тудушки
     {
         id: 8,
         text: '9 Lorem ipsum',
-        check: false,
+        check: true,
     },
 ] 
 //renderTodo(arr)
-pageCounter()
+pageCounter(arr)
 render(arr, totalPage)
 
 
@@ -97,7 +97,7 @@ function addTodo(e) { //общее добавление
     //console.log(arr);
     inputTodo.value = ''
     inputTodo.focus
-    pageCounter()
+    pageCounter(arr)
     render(arr, totalPage)
 }
 
@@ -107,25 +107,25 @@ function inputSubmit(e) { //добавление по ENTER
     }
 }
 
-function pageCounter() { //счетчик страниц
-    if (arr.length <= COUNT_PAGE) {
+function pageCounter(array) { //счетчик страниц
+    if (array.length <= COUNT_PAGE) {
         totalPage = 1
     } else {
-        totalPage = Math.ceil(arr.length / COUNT_PAGE)
+        totalPage = Math.ceil(array.length / COUNT_PAGE)
     }
 }
-function paginationSlice(page) { //создаем массив страницы
+function paginationSlice(array, page) { //создаем массив страницы
     const start = (page - 1) * 5
     const end = page * 5
     //console.log(start, end);
-    paginationArr = arr.slice(start, end)
+    paginationArr = array.slice(start, end)
     //console.log(pagitationArr);
 }
 function changePage(e) { //изменение текущей страницы по клику
     //console.log(e.target.textContent);
     //console.log(arr);
     currentPage = parseInt(e.target.textContent)
-    render(paginationArr, totalPage)
+    render(arr, totalPage)
 }
 
 function render(array, page) { //общий рендер
@@ -146,12 +146,11 @@ function renderPagination(page) { //с 0 отрисовывает элемент
 
 function renderTodo(array) { //общий рендер тудушек
     containerTodo.innerHTML = ""
-    pageCounter()
+    pageCounter(array)
     console.log(totalPage);
-    paginationSlice(currentPage)
+    paginationSlice(array, currentPage)
     console.log(paginationArr);
-    array = paginationArr
-    array.forEach(element => {
+    paginationArr.forEach(element => {
         const task = 
             `<li data-id=${element.id} class="todo-list_item">
                 <input type="checkbox" id="checkbox" ${element.check ? 'checked' : ''}>
@@ -165,13 +164,19 @@ function renderTodo(array) { //общий рендер тудушек
             containerTodo.innerHTML += task
     });
 }
+function renderAll(array) {
+    pageCounter(array)
+    render(array, totalPage)
+}
 function renderComplitedTodo() {
-    const complitedArr = paginationArr.filter(item => item.check === true)
-    renderTodo(complitedArr)
+    const complitedArr = arr.filter(item => item.check === true)
+    pageCounter(complitedArr)
+    render(complitedArr, totalPage)
 }
 function renderNoComplitedTodo() {
-    const complitedArr = paginationArr.filter(item => item.check === false)
-    renderTodo(complitedArr)
+    const complitedArr = arr.filter(item => item.check === false)
+    pageCounter(complitedArr)
+    render(complitedArr, totalPage)
 }
 
 function changeTask(e) {
@@ -269,7 +274,8 @@ function removeAllCheckElementArr(e) {
     console.log(newArr);
     arr = newArr
     console.log(arr);
-    renderTodo(arr)
+    pageCounter(arr)
+    render(arr, totalPage)
 }
 function checkAllElementArr(e) {
     //console.log(e.target.checked);
@@ -291,7 +297,7 @@ containerTodo.addEventListener('click', e => changeTask(e)) //слушатель
 containerTodo.addEventListener('keyup', e => edit(e)) //слушатель для реагирования на редактирование
 removeAllActive.addEventListener('click', e => removeAllCheckElementArr(e)) //удалить все активные
 checkAll.addEventListener('click', e => checkAllElementArr(e)) //пометка всех как активных/нективных
-btnRenderAll.addEventListener('click', () => render(paginationAll, totalPage)) //вывести все по странице
+btnRenderAll.addEventListener('click', () => renderAll(arr)) //вывести все
 btnRenderComplited.addEventListener('click', renderComplitedTodo) //вывести все выполненные
 btnRenderNoComplited.addEventListener('click', renderNoComplitedTodo) //вывести все невыполненные
 paginationDiv.addEventListener('click',  e => changePage(e)) //переключение страницы
