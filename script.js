@@ -5,9 +5,7 @@ const buttonSubmit = document.querySelector('.submit_text') //кнопка оз�
 const containerTodo = document.querySelector('.todo-list') //контейнер всех тудушек
 const removeAllActive = document.querySelector('.change-list_remove') //кнопка удаления всех активных тудушек
 const checkAll = document.querySelector('.check-all_checkbox') //chckbox для выделения всех, как активных
-const btnRenderAll = document.querySelector('.renderAll') //кнопка вывода всех задач (пагинация учитывается)
-const btnRenderComplited = document.querySelector('.renderComplited') //кнопка вывода выполненных задач
-const btnRenderNoComplited = document.querySelector('.renderNoComplited') //кнопка вывода НЕ выполненных задач
+const btnsTabs = document.querySelector('.filter') //контейнер кнопок табуляции
 const paginationDiv = document.querySelector('.pagination') //контейнер с кнопками страниц
 const pageBtn = document.querySelector('.page') //кнопка страницы
 
@@ -17,19 +15,20 @@ const COUNT_PAGE = 5
 const ENTER_KEY = 13
 const ESC_KEY = 27
 const DOUBLE_CLIK = 2
+const MAX_LENGTH_TODO = 255
 let totalPage = 1
 let currentPage = 1
-
-class Todoitem {
-    constructor(text, bool) {
-        this.id = Date.now();
-        this.text = text;
-        this.check = bool;
-    } 
-}
 let paginationArr = [] //глобальный массив постраничных записей
 let arrayAllTodo = [] //глобальный массив всех тудушек
 
+/* КЛАСС ДЛЯ ФОРМИРОВАНИЯ ОБЪЕКТА ТУДУШКИ */
+class Todoitem {
+  constructor(text, bool) {
+      this.id = Date.now();
+      this.text = text;
+      this.isExecuted = bool;
+  } 
+}
 
 const validationText = (text) => { //проверка текста на наличие тегов
     return text
@@ -41,14 +40,15 @@ const validationText = (text) => { //проверка текста на нали
 
 /* ДОБАЛЕНИЕ ЗАПИСИ */
 const addTodo = (e) => { //общее добавление
-    if (inputTodo.value.trim() === '') {return 0}
-    e.preventDefault()
+  e.preventDefault()
+  if (!(inputTodo.value.trim() === '')) {
     const newTodo = new Todoitem(inputTodo.value, false)
     arrayAllTodo.push(newTodo)
     inputTodo.value = ''
     inputTodo.focus
     pageCounter(arrayAllTodo)
-    render(arrayAllTodo, totalPage)
+    render()
+  }
 }
 const inputSubmit = (e) => { //добавление по ENTER
     if (e.keycode === ENTER_KEY) {
@@ -71,17 +71,17 @@ const paginationSlice = (array, page) => { //создаем массив стр�
 }
 const changePage = (e) => { //изменение текущей страницы по клику
     currentPage = parseInt(e.target.textContent)
-    render(arrayAllTodo, totalPage)
+    render()
 }
 
 /* РЕНДЕР */
-const render = (array, page) => { //общий рендер
-    renderTodo(array)
-    renderPagination(page)
+const render = () => { //общий рендер
+    renderTodo()
+    renderPagination()
 }
-const renderPagination = (page) => { //с 0 отрисовывает элементы страниц
+const renderPagination = () => { //с 0 отрисовывает элементы страниц
     paginationDiv.innerHTML = ""
-    for (let i = 1; i <= page; i++) {
+    for (let i = 1; i <= totalPage; i++) {
         const pages = 
         `<button class="page${+ currentPage === i ? " active" : ""}"}>
             ${i}
@@ -89,14 +89,14 @@ const renderPagination = (page) => { //с 0 отрисовывает элеме�
         paginationDiv.innerHTML += pages
     }
 }
-const renderTodo = (array) => { //общий рендер тудушек
+const renderTodo = (array = arrayAllTodo) => { //общий рендер тудушек
     containerTodo.innerHTML = ""
     pageCounter(array)
     paginationSlice(array, currentPage)
     paginationArr.forEach(element => {
         const task = 
             `<li data-id=${element.id} class="todo-list_item">
-                <input type="checkbox" class="checkbox" ${element.check ? 'checked' : ''}>
+                <input type="checkbox" class="checkbox" ${element.isExecuted ? 'checked' : ''}>
                 <p class="todo-list_text">${element.text}</p>
                 <input type="text" class="todo-list_reset-text" 
                     placeholder="перепиши меня" 
@@ -107,24 +107,27 @@ const renderTodo = (array) => { //общий рендер тудушек
             containerTodo.innerHTML += task
     });
 }
-const renderAll = (array) => { //вывести все
-    pageCounter(array)
-    render(array, totalPage)
-}
-const renderComplitedTodo = () => { //рендер только активных
-    const complitedArr = arrayAllTodo.filter(item => item.check === true)
-    pageCounter(complitedArr)
-    render(complitedArr, totalPage)
-}
-const renderNoComplitedTodo = () => { //рендер только неактивных
-    const complitedArr = arrayAllTodo.filter(item => item.check === false)
-    pageCounter(complitedArr)
-    render(complitedArr, totalPage)
+const renderTab = (e) => { //функция табуляции
+  if (e.target.matches('.renderAll')) {
+    pageCounter(arrayAllTodo)
+    renderTodo()
+  }
+  if (e.target.matches('.renderExecuted')) {
+    const executedArr = arrayAllTodo.filter(item => item.isExecuted === true)
+    pageCounter(executedArr)
+    renderTodo(executedArr)
+  }
+  if (e.target.matches('.renderUnfulfilled')) {
+    const unfulfilledArr = arrayAllTodo.filter(item => item.isExecuted === false)
+    pageCounter(unfulfilledArr)
+    renderTodo(unfulfilledArr)
+  }
+  renderPagination()
 }
 
 /* ПЕРВОНАЧАЛЬНЫЙ РЕНДЕР */
 pageCounter(arrayAllTodo)
-render(arrayAllTodo, totalPage)
+render()
 
 /* ОБЩИЕ ФУНКЦИИ ДЛЯ РАБОТЫ С ОДНОЙ ЗАПИСЬЮ */
 const changeTask = (e) =>{
@@ -147,17 +150,17 @@ const edit = (e) => { //подготовка к перезаписи
     const todoLi = e.target.parentNode
     const todoId = parseInt(todoLi.dataset.id)
     if (e.keyCode === ESC_KEY) { 
-        renderTodo(arrayAllTodo)
+        renderTodo()
     } else {
         if ((e.keyCode === ENTER_KEY || e.type === 'blur') &&
             e.target.matches('.todo-list_reset-text')) {
             const todoItem = todoLi.querySelector('.todo-list_reset-text')
             const text = validationText(todoItem.value)
             if (text.length === 0) {
-                renderTodo(arrayAllTodo)
+                renderTodo()
             } else {
-                if (text.length > 255) {
-                    const text = text.slice(0,255)
+                if (text.length > MAX_LENGTH_TODO) {
+                    const text = text.slice(0,MAX_LENGTH_TODO)
                     resetText(text, todoId)
                 }
                 resetText(text, todoId)
@@ -170,44 +173,38 @@ const edit = (e) => { //подготовка к перезаписи
 const resetText = (text, id) => { //изменение текста туду
     const arrElementId = arrayAllTodo.findIndex(item => item.id === id)
     arrayAllTodo[arrElementId].text = text
-    renderTodo(arrayAllTodor)
+    render()
 }
 const invertCheckbox = (id) => { //меняем состояние выполнения
     const arrElementId = arrayAllTodo.findIndex(item => item.id === id)
-    arrayAllTodo[arrElementId].check = !arrayAllTodo[arrElementId].check
-    renderTodo(arrayAllTodo)
+    arrayAllTodo[arrElementId].isExecuted = !arrayAllTodo[arrElementId].isExecuted
+    render()
 }
 const removeElementArr = (id) => { //удаляем тудушку
     const newArr = arrayAllTodo.filter(item => item.id !== id)
     arrayAllTodo = newArr
-    renderTodo(arrayAllTodo)
+    render()
 }
 const removeAllCheckElementArr = (e) => { //удаление всех активных
     e.preventDefault()
-    const newArr = arrayAllTodo.filter(item => item.check !== true)
+    const newArr = arrayAllTodo.filter(item => item.isExecuted !== true)
     arrayAllTodo = newArr
     pageCounter(arrayAllTodo)
-    render(arrayAllTodo, totalPage)
+    render()
 }
-const checkAllElementArr = (e) => { //сделать все активными
-    if (e.target.checked) {
-      arrayAllTodo.forEach(item => item.check = true)
-    } else {
-      arrayAllTodo.forEach(item => item.check = false)
-    }
-    renderTodo(arrayAllTodo)
+const checkAllElementArr = (e) => { //сделать все активными/неактивными
+    arrayAllTodo.forEach(item => item.isExecuted = e.target.checked)
+    renderTodo()
 }
 
 
 
-buttonSubmit.addEventListener('click', e => addTodo(e)) //для добавления тудушки
-inputTodo.addEventListener('keydown', e => inputSubmit(e)) //добавление по нажатию на ENTER
-containerTodo.addEventListener('click', e => changeTask(e)) //слушатель для изменения текста туду
-containerTodo.addEventListener('keyup', e => edit(e)) //слушатель для реагирования на редактирование
-containerTodo.addEventListener('blur', e => edit(e), true)
-removeAllActive.addEventListener('click', e => removeAllCheckElementArr(e)) //удалить все активные
-checkAll.addEventListener('click', e => checkAllElementArr(e)) //пометка всех как активных/нективных
-btnRenderAll.addEventListener('click', () => renderAll(arrayAllTodo)) //вывести все
-btnRenderComplited.addEventListener('click', renderComplitedTodo) //вывести все выполненные
-btnRenderNoComplited.addEventListener('click', renderNoComplitedTodo) //вывести все невыполненные
-paginationDiv.addEventListener('click',  e => changePage(e)) //переключение страницы
+buttonSubmit.addEventListener('click', addTodo) //для добавления тудушки
+inputTodo.addEventListener('keydown', inputSubmit) //добавление по нажатию на ENTER
+containerTodo.addEventListener('click', changeTask) //слушатель для изменения текста туду
+containerTodo.addEventListener('keyup', edit) //слушатель для реагирования на редактирование
+containerTodo.addEventListener('blur', edit, true)
+removeAllActive.addEventListener('click', removeAllCheckElementArr) //удалить все активные
+checkAll.addEventListener('click', checkAllElementArr) //пометка всех как активных/нективных
+btnsTabs.addEventListener('click', renderTab) // общий слушатель для табуляции
+paginationDiv.addEventListener('click',  changePage) //переключение страницы
