@@ -148,13 +148,13 @@ function renderPagination(page) { //с 0 отрисовывает элемент
 function renderTodo(array) { //общий рендер тудушек
     containerTodo.innerHTML = ""
     pageCounter(array)
-    console.log(totalPage);
+    //console.log(totalPage);
     paginationSlice(array, currentPage)
-    console.log(paginationArr);
+    //console.log(paginationArr);
     paginationArr.forEach(element => {
         const task = 
             `<li data-id=${element.id} class="todo-list_item">
-                <input type="checkbox" id="checkbox" ${element.check ? 'checked' : ''}>
+                <input type="checkbox" class="checkbox" ${element.check ? 'checked' : ''}>
                 <p class="todo-list_text">${element.text}</p>
                 <input type="text" class="todo-list_reset-text" 
                     placeholder="перепиши меня" 
@@ -183,6 +183,7 @@ function renderNoComplitedTodo() { //рендер только неактивн�
 /* ОБЩИЕ ФУНКЦИИ ДЛЯ РАБОТЫ С ОДНОЙ ЗАПИСЬЮ */
 function changeTask(e) {
     const todoId = parseInt(e.target.parentNode.dataset.id)
+    //console.log(todoId);
     //console.log(todoLi);
     //const todoId = todoLi.dataset.id
 
@@ -197,10 +198,9 @@ function changeTask(e) {
         todoItemReset.focus()
         //edit(e)
         //console.log(todoItemReset.value);
-
     }
 
-    if (e.target.matches('#checkbox')) {
+    if (e.target.matches('.checkbox')) {
         invertCheckbox(todoId)
     }
 
@@ -220,7 +220,7 @@ function edit(e) { //подготовка к перезаписи
     if (e.keyCode === ESC_KEY) { 
         renderTodo(arr)
     } else {
-        console.log(e.type);
+        //console.log(e.type);
         if ((e.keyCode === ENTER_KEY || e.type === 'blur') &&
             e.target.matches('.todo-list_reset-text')) {
             const todoItem = todoLi.querySelector('.todo-list_reset-text')
