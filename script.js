@@ -8,11 +8,11 @@ const checkAll = document.querySelector('.check-all_checkbox') //chckbox для 
 const btnRenderAll = document.querySelector('.renderAll') //кнопка вывода всех задач (пагинация учитывается)
 const btnRenderComplited = document.querySelector('.renderComplited') //кнопка вывода выполненных задач
 const btnRenderNoComplited = document.querySelector('.renderNoComplited') //кнопка вывода НЕ выполненных задач
-const paginationDiv = document.querySelector('.pagination')
-const pageBtn = document.querySelector('.page')
+const paginationDiv = document.querySelector('.pagination') //контейнер с кнопками страниц
+const pageBtn = document.querySelector('.page') //кнопка страницы
 
-//console.log(inputTodo);
 
+/* КОНСТАНТЫ */
 const COUNT_PAGE = 5
 const ENTER_KEY = 13
 const ESC_KEY = 27
@@ -75,12 +75,13 @@ let arr = [ // массив, в котором все тудушки
         check: true,
     },
 ] 
-//renderTodo(arr)
+
+/* ПЕРВОНАЧАЛЬНЫЙ РЕНДЕР */
 pageCounter(arr)
 render(arr, totalPage)
 
 
-function validationText(text) {
+function validationText(text) { //проверка текста на наличие тегов
     return text
             .trim()
             .replace(/ {2,}/g, " ")
@@ -88,6 +89,7 @@ function validationText(text) {
             .replace(/>/g, '&gt')
 }
 
+/* ДОБАЛЕНИЕ ЗАПИСИ */
 function addTodo(e) { //общее добавление
     if (inputTodo.value.trim() === '') {return 0}
     e.preventDefault()
@@ -100,13 +102,13 @@ function addTodo(e) { //общее добавление
     pageCounter(arr)
     render(arr, totalPage)
 }
-
 function inputSubmit(e) { //добавление по ENTER
     if (e.keycode === ENTER_KEY) {
         addTodo(e)
     }
 }
 
+/* ПАГИНАЦИЯ */
 function pageCounter(array) { //счетчик страниц
     if (array.length <= COUNT_PAGE) {
         totalPage = 1
@@ -128,11 +130,11 @@ function changePage(e) { //изменение текущей страницы п
     render(arr, totalPage)
 }
 
+/* РЕНДЕР */
 function render(array, page) { //общий рендер
     renderTodo(array)
     renderPagination(page)
 }
-
 function renderPagination(page) { //с 0 отрисовывает элементы страниц
     paginationDiv.innerHTML = ""
     for (let i = 1; i <= page; i++) {
@@ -143,7 +145,6 @@ function renderPagination(page) { //с 0 отрисовывает элемент
         paginationDiv.innerHTML += pages
     }
 }
-
 function renderTodo(array) { //общий рендер тудушек
     containerTodo.innerHTML = ""
     pageCounter(array)
@@ -164,21 +165,22 @@ function renderTodo(array) { //общий рендер тудушек
             containerTodo.innerHTML += task
     });
 }
-function renderAll(array) {
+function renderAll(array) { //вывести все
     pageCounter(array)
     render(array, totalPage)
 }
-function renderComplitedTodo() {
+function renderComplitedTodo() { //рендер только активных
     const complitedArr = arr.filter(item => item.check === true)
     pageCounter(complitedArr)
     render(complitedArr, totalPage)
 }
-function renderNoComplitedTodo() {
+function renderNoComplitedTodo() { //рендер только неактивных
     const complitedArr = arr.filter(item => item.check === false)
     pageCounter(complitedArr)
     render(complitedArr, totalPage)
 }
 
+/* ОБЩИЕ ФУНКЦИИ ДЛЯ РАБОТЫ С ОДНОЙ ЗАПИСЬЮ */
 function changeTask(e) {
     const todoId = parseInt(e.target.parentNode.dataset.id)
     //console.log(todoLi);
@@ -206,7 +208,6 @@ function changeTask(e) {
         removeElementArr(todoId)
     }
 }
-
 function edit(e) { //подготовка к перезаписи
     const todoLi = e.target.parentNode
     //console.log(todoLi);
@@ -219,6 +220,7 @@ function edit(e) { //подготовка к перезаписи
     if (e.keyCode === ESC_KEY) { 
         renderTodo(arr)
     } else {
+        console.log(e.type);
         if ((e.keyCode === ENTER_KEY || e.type === 'blur') &&
             e.target.matches('.todo-list_reset-text')) {
             const todoItem = todoLi.querySelector('.todo-list_reset-text')
@@ -228,13 +230,13 @@ function edit(e) { //подготовка к перезаписи
                 //todoLi.querySelector('.todo-list_text').style = 'display: inline-block'
                 renderTodo(arr)
             } else {
-                console.log(text.length);
+                //console.log(text.length);
                 if (text.length > 255) {
                     const text = text.slice(0,255)
                     //console.log(text.length);
                     resetText(text, todoId)
                 }
-                console.log(text);
+                //console.log(text);
                 resetText(text, todoId)
             }
         }
@@ -242,11 +244,12 @@ function edit(e) { //подготовка к перезаписи
     
 }
 
+/* ФУНКЦИИ ДЛЯ ЛОКАЛЬНОЙ РАБОТЫ */
 function resetText(text, id) { //изменение текста туду
     
     //console.log(arr[0].id);
     const arrElementId = arr.findIndex(item => item.id === id)
-    console.log(arrElementId);
+    //console.log(arrElementId);
     arr[arrElementId].text = text
 
     renderTodo(arr)
@@ -268,7 +271,7 @@ function removeElementArr(id) { //удаляем тудушку
 
     renderTodo(arr)
 }
-function removeAllCheckElementArr(e) {
+function removeAllCheckElementArr(e) { //удаление всех активных
     e.preventDefault()
     const newArr = arr.filter(item => item.check !== true)
     console.log(newArr);
@@ -277,7 +280,7 @@ function removeAllCheckElementArr(e) {
     pageCounter(arr)
     render(arr, totalPage)
 }
-function checkAllElementArr(e) {
+function checkAllElementArr(e) { //сделать все активными
     //console.log(e.target.checked);
     if (e.target.checked) {
         arr.forEach(item => item.check = true)
@@ -288,18 +291,16 @@ function checkAllElementArr(e) {
 }
 
 
-/////// удали из render лишний аргумент
 
 
 buttonSubmit.addEventListener('click', e => addTodo(e)) //для добавления тудушки
 inputTodo.addEventListener('keydown', e => inputSubmit(e)) //добавление по нажатию на ENTER
 containerTodo.addEventListener('click', e => changeTask(e)) //слушатель для изменения текста туду
 containerTodo.addEventListener('keyup', e => edit(e)) //слушатель для реагирования на редактирование
+containerTodo.addEventListener('blur', e => edit(e), true)
 removeAllActive.addEventListener('click', e => removeAllCheckElementArr(e)) //удалить все активные
 checkAll.addEventListener('click', e => checkAllElementArr(e)) //пометка всех как активных/нективных
 btnRenderAll.addEventListener('click', () => renderAll(arr)) //вывести все
 btnRenderComplited.addEventListener('click', renderComplitedTodo) //вывести все выполненные
 btnRenderNoComplited.addEventListener('click', renderNoComplitedTodo) //вывести все невыполненные
 paginationDiv.addEventListener('click',  e => changePage(e)) //переключение страницы
-
-
