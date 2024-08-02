@@ -76,12 +76,8 @@ let arr = [ // массив, в котором все тудушки
     },
 ] 
 
-/* ПЕРВОНАЧАЛЬНЫЙ РЕНДЕР */
-pageCounter(arr)
-render(arr, totalPage)
 
-
-function validationText(text) { //проверка текста на наличие тегов
+const validationText = (text) => { //проверка текста на наличие тегов
     return text
             .trim()
             .replace(/ {2,}/g, " ")
@@ -90,7 +86,7 @@ function validationText(text) { //проверка текста на налич�
 }
 
 /* ДОБАЛЕНИЕ ЗАПИСИ */
-function addTodo(e) { //общее добавление
+const addTodo = (e) => { //общее добавление
     if (inputTodo.value.trim() === '') {return 0}
     e.preventDefault()
     const newTodo = new Todoitem(inputTodo.value, false)
@@ -102,28 +98,28 @@ function addTodo(e) { //общее добавление
     pageCounter(arr)
     render(arr, totalPage)
 }
-function inputSubmit(e) { //добавление по ENTER
+const inputSubmit = (e) => { //добавление по ENTER
     if (e.keycode === ENTER_KEY) {
         addTodo(e)
     }
 }
 
 /* ПАГИНАЦИЯ */
-function pageCounter(array) { //счетчик страниц
+const pageCounter = (array) => { //счетчик страниц
     if (array.length <= COUNT_PAGE) {
         totalPage = 1
     } else {
         totalPage = Math.ceil(array.length / COUNT_PAGE)
     }
 }
-function paginationSlice(array, page) { //создаем массив страницы
+const paginationSlice = (array, page) => { //создаем массив страницы
     const start = (page - 1) * 5
     const end = page * 5
     //console.log(start, end);
     paginationArr = array.slice(start, end)
     //console.log(pagitationArr);
 }
-function changePage(e) { //изменение текущей страницы по клику
+const changePage = (e) => { //изменение текущей страницы по клику
     //console.log(e.target.textContent);
     //console.log(arr);
     currentPage = parseInt(e.target.textContent)
@@ -131,11 +127,11 @@ function changePage(e) { //изменение текущей страницы п
 }
 
 /* РЕНДЕР */
-function render(array, page) { //общий рендер
+const render = (array, page) => { //общий рендер
     renderTodo(array)
     renderPagination(page)
 }
-function renderPagination(page) { //с 0 отрисовывает элементы страниц
+const renderPagination = (page) => { //с 0 отрисовывает элементы страниц
     paginationDiv.innerHTML = ""
     for (let i = 1; i <= page; i++) {
         const pages = 
@@ -145,7 +141,7 @@ function renderPagination(page) { //с 0 отрисовывает элемент
         paginationDiv.innerHTML += pages
     }
 }
-function renderTodo(array) { //общий рендер тудушек
+const renderTodo = (array) => { //общий рендер тудушек
     containerTodo.innerHTML = ""
     pageCounter(array)
     //console.log(totalPage);
@@ -165,23 +161,27 @@ function renderTodo(array) { //общий рендер тудушек
             containerTodo.innerHTML += task
     });
 }
-function renderAll(array) { //вывести все
+const renderAll = (array) => { //вывести все
     pageCounter(array)
     render(array, totalPage)
 }
-function renderComplitedTodo() { //рендер только активных
+const renderComplitedTodo = () => { //рендер только активных
     const complitedArr = arr.filter(item => item.check === true)
     pageCounter(complitedArr)
     render(complitedArr, totalPage)
 }
-function renderNoComplitedTodo() { //рендер только неактивных
+const renderNoComplitedTodo = () => { //рендер только неактивных
     const complitedArr = arr.filter(item => item.check === false)
     pageCounter(complitedArr)
     render(complitedArr, totalPage)
 }
 
+/* ПЕРВОНАЧАЛЬНЫЙ РЕНДЕР */
+pageCounter(arr)
+render(arr, totalPage)
+
 /* ОБЩИЕ ФУНКЦИИ ДЛЯ РАБОТЫ С ОДНОЙ ЗАПИСЬЮ */
-function changeTask(e) {
+const changeTask = (e) =>{
     const todoId = parseInt(e.target.parentNode.dataset.id)
     //console.log(todoId);
     //console.log(todoLi);
@@ -208,7 +208,7 @@ function changeTask(e) {
         removeElementArr(todoId)
     }
 }
-function edit(e) { //подготовка к перезаписи
+const edit = (e) => { //подготовка к перезаписи
     const todoLi = e.target.parentNode
     //console.log(todoLi);
     const todoId = parseInt(todoLi.dataset.id)
@@ -245,7 +245,7 @@ function edit(e) { //подготовка к перезаписи
 }
 
 /* ФУНКЦИИ ДЛЯ ЛОКАЛЬНОЙ РАБОТЫ */
-function resetText(text, id) { //изменение текста туду
+const resetText = (text, id) => { //изменение текста туду
     
     //console.log(arr[0].id);
     const arrElementId = arr.findIndex(item => item.id === id)
@@ -254,7 +254,7 @@ function resetText(text, id) { //изменение текста туду
 
     renderTodo(arr)
 }
-function invertCheckbox(id) { //меняем состояние выполнения
+const invertCheckbox = (id) => { //меняем состояние выполнения
     const arrElementId = arr.findIndex(item => item.id === id)
     //console.log(arrElementId);
     arr[arrElementId].check = !arr[arrElementId].check
@@ -262,7 +262,7 @@ function invertCheckbox(id) { //меняем состояние выполнен
 
     renderTodo(arr)
 }
-function removeElementArr(id) { //удаляем тудушку
+const removeElementArr = (id) => { //удаляем тудушку
     //console.log(typeof id);
     const newArr = arr.filter(item => item.id !== id)
     //console.log(newArr);
@@ -271,7 +271,7 @@ function removeElementArr(id) { //удаляем тудушку
 
     renderTodo(arr)
 }
-function removeAllCheckElementArr(e) { //удаление всех активных
+const removeAllCheckElementArr = (e) => { //удаление всех активных
     e.preventDefault()
     const newArr = arr.filter(item => item.check !== true)
     console.log(newArr);
@@ -280,7 +280,7 @@ function removeAllCheckElementArr(e) { //удаление всех активн�
     pageCounter(arr)
     render(arr, totalPage)
 }
-function checkAllElementArr(e) { //сделать все активными
+const checkAllElementArr = (e) => { //сделать все активными
     //console.log(e.target.checked);
     if (e.target.checked) {
         arr.forEach(item => item.check = true)
