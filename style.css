@@ -14,26 +14,26 @@ h1 {
 }
 
 button {
-  background-color: white;
+  background-color: rgb(255, 255, 255);
   border: 1px solid rgba(0, 128, 128, .5);
   padding: 5px 10px;
 }
 .active, button:active {
-  background-color: teal;
-  color: white;
+  background-color: rgb(0, 128, 128);
+  color: rgb(255, 255, 255);
 }
 
 .container {
   margin: 0 auto;
   padding: 15px 25px;
   max-width: 800px;
-  border: 2px solid teal;
+  border: 2px solid rgb(0, 128, 128);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.add_text {
+#addText {
   width: 100%;
   display: flex;
   justify-content: center;
@@ -41,19 +41,15 @@ button {
   margin: 10px 0;
 }
 
-.write_text, .todo-list_reset-text {
+#addTodoItem, .todo-list_reset-text {
   min-width: 400px;
   border: 1px solid rgba(0, 128, 128, .5);
 }
-.write_text:active, .todo-list_reset-text:active{
+#addTodoItem:active, .todo-list_reset-text:active{
   border: 3px solid rgba(0, 128, 128, 1);
 }
 
-.submit_text {
-
-}
-
-.todo-list {
+#containerTodo {
   width: calc(100% - 50px);
 }
 
@@ -64,75 +60,49 @@ button {
   align-items: center;
   gap: 20px;
   padding: 20px 20px;
-  border: 2px solid teal;
+  border: 2px solid rgb(0, 128, 128);
   margin: 10px 0;
 }
 
 .todo-list_text {
-
+  overflow: hidden;
 }
 
 .todo-list_reset-text {
   height: 30px;
-  display: none;
 }
 
 .todo-list-button {
   padding: 5px 10px;
-  border: 2px solid rgba(205, 0, 0, 0);
+  border: none;
   background-color: red;
-  color: white;
+  color: rgb(255, 255, 255);
   font-size: 32px;
   font-weight: 900;
 }
 .todo-list-button:active {
-  border: 2px solid rgb(175, 0, 0);
   background-color: rgb(195, 0, 0);
 }
 
 
-.change-list {
+#changeList{
   margin: 10px 0;
   display: flex;
   width: 100%;
   justify-content: space-around;
 }
 
-.check-all {
+#checkAll {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.check-all_checkbox {
-
-}
-
-.check-all_text {
-   
-}
-
-.change-list_remove {
-
-}
-
-.filter {
+#filter {
   margin: 10px 0;
 }
 
-.renderAll {
-
-}
-
-.renderActive {
-
-}
-
-.renderComplited {
-
-}
-
-.pagination {
+#pagination {
   margin: 10px 0;
   display: flex;
   gap: 10px;
@@ -140,4 +110,10 @@ button {
 
 .page {
   border-radius: 50%;
+}
+
+#showMoreContainer {
+  text-align: center;
+  width: 100%;
+  margin: 20px auto 10px auto;
 }

@@ -1,38 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToDoList</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <h1>ToDo</h1>
-    <form class="add_text">
-      <input class="write_text" type="text" placeholder="пиши меня">
-      <button class="submit_text">зжимай</button>
-    </form>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDoList</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>ToDo</h1>
+      <div id="addText">
+        <input id="addTodoItem" type="text" placeholder="пиши меня">
+        <button id="submitTodo">Зжимай</button>
+      </div>
 
-    <form class="change-list">
-      <div class="check-all">
-        <input class="check-all_checkbox" type="checkbox">
-        <p class="ckeck-all_text">Все сделал</p>
+      <div id="changeList">
+        <div id="checkAll">
+          <input id="checkboxCheckAll" type="checkbox">
+          <p id="ckeckAllText">Все сделал</p>
+        </div>
+        
+        <button id="removeAllActive">Режъ активных</button>
       </div>
       
-      <button class="change-list_remove">режъ активных</button>
-    </form>
-    
-    <ul class="todo-list"></ul>
+      <ul id="containerTodo"></ul>
 
-    <div class="filter">
-      <button class="renderAll">Все</button>
-      <button class="renderActive">Выполненные</button>
-      <button class="renderComplited">Не выполненные</button>
+      <!--<div id="showMoreContainer">
+        <button id="showMore">Давай больше</button>
+      </div>-->
+
+      <div id="filter">
+        <button id="renderAll">Все (0)</button>
+        <button id="renderActive">Выполненные (0)</button>
+        <button id="renderComplited">Не выполненные (0)</button>
+      </div>
+      <div id="pagination"></div>
     </div>
-    <div class="pagination"></div>
-  </div>
-  
-  <script src="script.js"></script>
-</body>
+    
+    <script src="script.js"></script>
+  </body>
 </html>
