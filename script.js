@@ -1,12 +1,12 @@
-const inputTodo = document.querySelector('#addTodoItem') //поле ввода текста туду
-const buttonSubmit = document.querySelector('#submitTodo') //кнопка оздания туду
-const containerTodo = document.querySelector('#containerTodo') //контейнер всех тудушек
-const removeAllActive = document.querySelector('#removeAllActive') //кнопка удаления всех активных тудушек
-const checkAll = document.querySelector('#checkboxCheckAll') //chckbox для выделения всех, как активных
-const btnsTabs = document.querySelector('#filter') //контейнер кнопок табуляции
-const paginationDiv = document.querySelector('#pagination') //контейнер с кнопками страниц
+const inputTodo = document.querySelector('#addTodoItem')
+const buttonSubmit = document.querySelector('#submitTodo')
+const containerTodo = document.querySelector('#containerTodo')
+const removeAllActive = document.querySelector('#removeAllActive')
+const checkAll = document.querySelector('#checkboxCheckAll')
+const filterButtonsContainer = document.querySelector('#filter')
+const paginationContainer = document.querySelector('#pagination')
 
-/* КОНСТАНТЫ */
+const TOTAL_COUNT_TODOS_ON_PAGE = 5
 const QUANTITY_TODOS_ADDITION = 5
 const ENTER_KEY = 13
 const ESC_KEY = 27
@@ -16,10 +16,60 @@ const MAX_LENGTH_TODO = 255
 let countPage = 1
 let currentPage = 1
 let countTodosOnPage = 5
-let arrayAllTodo = [] //глобальный массив всех тудушек
+let arrayAllTodo = [
+  {
+    id: 0,
+    text: 1,
+    isChecked: false
+  },
+  {
+    id: 1,
+    text: 2,
+    isChecked: false
+  },
+  {
+    id: 2,
+    text: 3,
+    isChecked: false
+  },
+  {
+    id: 3,
+    text: 4,
+    isChecked: false
+  },
+  {
+    id: 4,
+    text: 5,
+    isChecked: false
+  },
+  {
+    id: 5,
+    text: 6,
+    isChecked: false
+  },
+  {
+    id: 6,
+    text: 7,
+    isChecked: false
+  },
+  {
+    id: 7,
+    text: 8,
+    isChecked: false
+  },
+  {
+    id: 8,
+    text: 9,
+    isChecked: false
+  },
+  {
+    id: 9,
+    text: 0,
+    isChecked: false
+  },
+]
 let filter = "all"
 
-/* КЛАСС ДЛЯ ФОРМИРОВАНИЯ ОБЪЕКТА ТУДУШКИ */
 class TodoItem {
   constructor(text) {
     this.id = Date.now();
@@ -28,7 +78,7 @@ class TodoItem {
   } 
 }
 
-const validationText = (text) => { //проверка текста на наличие тегов
+const validationText = (text) => {
   return text
           .trim()
           .replace(/ {2,}/g, " ")
@@ -36,8 +86,7 @@ const validationText = (text) => { //проверка текста на нали
           .replace(/>/g, '&gt')
 }
 
-/* ДОБАЛЕНИЕ ЗАПИСИ */
-const addTodo = (event) => { //общее добавление
+const addTodo = (event) => {
   event.preventDefault()
   if (!(inputTodo.value.trim() === '')) {
     const text = validationText(inputTodo.value)
@@ -45,39 +94,37 @@ const addTodo = (event) => { //общее добавление
     arrayAllTodo.push(newTodo)
     inputTodo.value = ''
     inputTodo.focus
-    countNumberAllPages(arrayAllTodo.length)
+    calculateTotalNumberOfPages(arrayAllTodo.length)
     currentPage = currentPage === countPage ? currentPage : countPage
     render()
   }
 }
-const addTodosByPressingEnter = (event) => { //добавление по ENTER
+const addTodosByPressingEnter = (event) => {
   if (event.keyCode === ENTER_KEY) {
     addTodo(event)
   }
 }
 
-/* ПАГИНАЦИЯ */
-const countNumberAllPages = (arrayLength) => { //счетчик страниц
-  if (arrayLength <= countTodosOnPage) {
+const calculateTotalNumberOfPages = (arrayLength) => {
+  if (arrayLength <= TOTAL_COUNT_TODOS_ON_PAGE) {
     countPage = 1
   } else {
-    countPage = Math.ceil(arrayLength / countTodosOnPage)
+    countPage = Math.ceil(arrayLength / TOTAL_COUNT_TODOS_ON_PAGE)
   }
 }
-const trimArrayByPage = (array, page) => { //создаем массив страницы
+const trimArrayByPage = (array, page) => {
   const start = (page - 1) * countTodosOnPage
   const end = page * countTodosOnPage
   return array.slice(start, end) 
 }
-const changePage = (event) => { //изменение текущей страницы по клику
+const changePage = (event) => {
   currentPage = parseInt(event.target.textContent)
-  countTodosOnPage = 5 //при выборе другой стр после нажатия "Давай больше" откатывае колличество тудушек на стр
+  countTodosOnPage = 5
   render()
 }
 
-/* РЕНДЕР */
-const render = () => { //общий рендер
-  const returnArray = renderFilterButtons()
+const render = () => {
+  const returnArray = renderFilterButtonsContainer()
   renderTodo(returnArray)
   renderBtnShowMore()
   renderPagination()
@@ -95,19 +142,19 @@ const renderBtnShowMore = () => {
           </div>`
   containerTodo.innerHTML += btnShowMore
 }
-const renderPagination = () => { //с 0 отрисовывает элементы страниц
-  paginationDiv.innerHTML = ""
+const renderPagination = () => {
+  paginationContainer.innerHTML = ""
   for (let i = 1; i <= countPage; i++) {
     const pages = 
     `<button class="page${+ currentPage === i ? " active" : ""}"}>
       ${i}
     </button>`
-    paginationDiv.innerHTML += pages
+    paginationContainer.innerHTML += pages
   }
 }
-const renderTodo = (arrayTodos = arrayAllTodo) => { //общий рендер тудушек
+const renderTodo = (arrayTodos = arrayAllTodo) => {
   containerTodo.innerHTML = ""
-  countNumberAllPages(arrayTodos.length)
+  calculateTotalNumberOfPages(arrayTodos.length)
   currentPage = currentPage >= countPage ? countPage : currentPage
   const paginationArr = trimArrayByPage(arrayTodos, currentPage)
   paginationArr.forEach(element => {
@@ -128,29 +175,29 @@ const renderTodo = (arrayTodos = arrayAllTodo) => { //общий рендер т
       containerTodo.innerHTML += task
   });
 }
-const renderFilterButtons = () => {
-  btnsTabs.innerHTML = ""
-  const executedArr = arrayAllTodo.filter(todo => todo.isChecked)
+const renderFilterButtonsContainer = () => {
+  filterButtonsContainer.innerHTML = ""
+  const complitedArr = arrayAllTodo.filter(todo => todo.isChecked)
   const unfulfilledArr = arrayAllTodo.filter(todo => !todo.isChecked)
-  const buttonsFilter = 
+  const filterButtonsContainer = 
         `<button id="renderAll">Все (${arrayAllTodo.length})</button>
-        <button id="renderActive">Выполненные (${executedArr.length})</button>
+        <button id="renderActive">Выполненные (${complitedArr.length})</button>
         <button id="renderComplited">Не выполненные (${unfulfilledArr.length})</button>`
-        btnsTabs.innerHTML += buttonsFilter
+        filterButtonsContainer.innerHTML += filterButtonsContainer
   if (filter === 'all') {
-    countNumberAllPages(arrayAllTodo.length)
+    calculateTotalNumberOfPages(arrayAllTodo.length)
     return ;
   }
-  if (filter === 'active') {
-    countNumberAllPages(executedArr.length)
-    if (!executedArr.length) {
+  if (filter === 'complited') {
+    calculateTotalNumberOfPages(complitedArr.length)
+    if (!complitedArr.length) {
       filter = 'all'
       return ;
     }
-    return executedArr
+    return complitedArr
   }
-  if (filter === 'complited') {
-    countNumberAllPages(unfulfilledArr.length)
+  if (filter === 'unfulfilled') {
+    calculateTotalNumberOfPages(unfulfilledArr.length)
     if (!unfulfilledArr.length) {
       filter = 'all'
       return ;
@@ -158,23 +205,22 @@ const renderFilterButtons = () => {
     return unfulfilledArr
   }
 }
-const changeFilter = (event) => { //функция табуляции
+
+const changeFilter = (event) => {
   if (event.target.matches('#renderAll')) {
     filter = 'all'
     render()
   }
   currentPage = 1
-  if (event.target.matches('#renderActive')) {
-    filter = 'active'
-    render()
-  }
   if (event.target.matches('#renderComplited')) {
     filter = 'complited'
     render()
   }
+  if (event.target.matches('#renderUnfulfilled')) {
+    filter = 'unfulfilled'
+    render()
+  }
 }
-
-/* ОБЩИЕ ФУНКЦИИ ДЛЯ РАБОТЫ С ОДНОЙ ЗАПИСЬЮ */
 const changeTask = (event) =>{
   const todoId = parseInt(event.target.parentNode.dataset.id)
   const arrElementId = arrayAllTodo.findIndex(todo => todo.id === todoId)
@@ -187,7 +233,7 @@ const changeTask = (event) =>{
   }
   if (event.target.matches('.checkbox')) {
     arrayAllTodo[arrElementId].isChecked = !arrayAllTodo[arrElementId].isChecked
-    const activityCheck = arrayAllTodo.every((todo) => todo.isChecked) //проверяем всех на активность, если прожали чекбоксы у тудушек
+    const activityCheck = arrayAllTodo.every((todo) => todo.isChecked)
     checkAll.checked = activityCheck ? true : false
     render()
   }
@@ -201,57 +247,56 @@ const changeTask = (event) =>{
     render()
   }
 }
-const rewriteTodo = (event) => { //подготовка к перезаписи
+const rewriteTodo = (event) => {
   const todoLi = event.target.parentNode
   const todoId = parseInt(todoLi.dataset.id)
   const arrElementId = arrayAllTodo.findIndex(todo => todo.id === todoId)
   if (event.keyCode === ESC_KEY) { 
     renderTodo()
-  } else {
-    //что-то сделать с ифом big->small
-    if ((event.keyCode === ENTER_KEY || event.type === 'blur')
-    && event.target.matches('.todo-list_reset-text')) {
-      const todoItem = todoLi.childNodes[5]
-      const text = validationText(todoItem.value)
-      if (text.length === 0) {
-        renderTodo()
-        renderBtnShowMore()
-      } else {
-        if (text.length > MAX_LENGTH_TODO) {
-          const trimText = text.slice(0,MAX_LENGTH_TODO)
-          arrayAllTodo[arrElementId].text = trimText
-        }
-        arrayAllTodo[arrElementId].text = text
-        render()
+    return;
+  }
+  if (!(event.keyCode === ENTER_KEY || event.type === 'blur')) {
+    return;
+  }
+  if (event.target.matches('.todo-list_reset-text')) {
+    const todoItem = todoLi.childNodes[5]
+    const text = validationText(todoItem.value)
+    if (text.length === 0) {
+      renderTodo()
+      renderBtnShowMore()
+    } else {
+      if (text.length > MAX_LENGTH_TODO) {
+        const trimText = text.slice(0,MAX_LENGTH_TODO)
+        arrayAllTodo[arrElementId].text = trimText
       }
+      arrayAllTodo[arrElementId].text = text
+      render()
     }
   }
 }
 
-/* ФУНКЦИИ ДЛЯ ЛОКАЛЬНОЙ РАБОТЫ */
-const removeAllCheckElementArr = (event) => { //удаление всех активных
+const removeAllCheckElementArr = (event) => {
   event.preventDefault()
   const newArr = arrayAllTodo.filter(todo => !todo.isChecked)
   arrayAllTodo = newArr
-  countNumberAllPages(arrayAllTodo.length)
+  calculateTotalNumberOfPages(arrayAllTodo.length)
   currentPage = 1
   render()
 }
-const checkAllElementArr = (event) => { //сделать все активными/неактивными
+const checkAllElementArr = (event) => {
   arrayAllTodo.forEach(todo => todo.isChecked = event.target.checked)
   renderTodo()
 }
 
-/* ПЕРВОНАЧАЛЬНЫЙ РЕНДЕР */
-countNumberAllPages(arrayAllTodo.length)
+calculateTotalNumberOfPages(arrayAllTodo.length)
 render()
 
-buttonSubmit.addEventListener('click', addTodo) //для добавления тудушки
-inputTodo.addEventListener('keydown', addTodosByPressingEnter) //добавление по нажатию на ENTER
-containerTodo.addEventListener('click', changeTask) //слушатель для изменения текста туду
-containerTodo.addEventListener('keyup', rewriteTodo) //слушатель для реагирования на редактирование
-containerTodo.addEventListener('blur', rewriteTodo, true) //если нажал не по полю ввода
-removeAllActive.addEventListener('click', removeAllCheckElementArr) //удалить все активные
-checkAll.addEventListener('click', checkAllElementArr) //пометка всех как активных/нективных
-btnsTabs.addEventListener('click', changeFilter) // общий слушатель для табуляции
-paginationDiv.addEventListener('click',  changePage) //переключение страницы
+buttonSubmit.addEventListener('click', addTodo)
+inputTodo.addEventListener('keydown', addTodosByPressingEnter)
+containerTodo.addEventListener('click', changeTask)
+containerTodo.addEventListener('keyup', rewriteTodo)
+containerTodo.addEventListener('blur', rewriteTodo, true)
+removeAllActive.addEventListener('click', removeAllCheckElementArr)
+checkAll.addEventListener('click', checkAllElementArr)
+filterButtonsContainer.addEventListener('click', changeFilter)
+paginationContainer.addEventListener('click',  changePage)
