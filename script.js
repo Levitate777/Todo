@@ -39,7 +39,7 @@ const addTodo = (event) => {
     };
     arrayAllTodo.push(newTodo);
     inputTodo.value = '';
-    inputTodo.focus;
+    inputTodo.focus();
     getNumberPages(arrayAllTodo.length);
     if (currentPage !== countPage) {currentPage = countPage;}
 
