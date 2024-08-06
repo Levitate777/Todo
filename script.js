@@ -16,58 +16,7 @@ const MAX_LENGTH_TODO = 255
 let countPage = 1
 let currentPage = 1
 let countTodosOnPage = 5
-let arrayAllTodo = [
-  {
-    id: 0,
-    text: 1,
-    isChecked: false
-  },
-  {
-    id: 1,
-    text: 2,
-    isChecked: false
-  },
-  {
-    id: 2,
-    text: 3,
-    isChecked: false
-  },
-  {
-    id: 3,
-    text: 4,
-    isChecked: false
-  },
-  {
-    id: 4,
-    text: 5,
-    isChecked: false
-  },
-  {
-    id: 5,
-    text: 6,
-    isChecked: false
-  },
-  {
-    id: 6,
-    text: 7,
-    isChecked: false
-  },
-  {
-    id: 7,
-    text: 8,
-    isChecked: false
-  },
-  {
-    id: 8,
-    text: 9,
-    isChecked: false
-  },
-  {
-    id: 9,
-    text: 0,
-    isChecked: false
-  },
-]
+let arrayAllTodo = []
 let filter = "all"
 
 class TodoItem {
@@ -123,12 +72,6 @@ const changePage = (event) => {
   render()
 }
 
-const render = () => {
-  const returnArray = renderFilterButtonsContainer()
-  renderTodo(returnArray)
-  renderBtnShowMore()
-  renderPagination()
-}
 const renderBtnShowMore = () => {
   if (arrayAllTodo.length < 6) {
     return;
@@ -179,11 +122,11 @@ const renderFilterButtonsContainer = () => {
   filterButtonsContainer.innerHTML = ""
   const complitedArr = arrayAllTodo.filter(todo => todo.isChecked)
   const unfulfilledArr = arrayAllTodo.filter(todo => !todo.isChecked)
-  const filterButtonsContainer = 
+  const filterButtons = 
         `<button id="renderAll">Все (${arrayAllTodo.length})</button>
         <button id="renderActive">Выполненные (${complitedArr.length})</button>
         <button id="renderComplited">Не выполненные (${unfulfilledArr.length})</button>`
-        filterButtonsContainer.innerHTML += filterButtonsContainer
+        filterButtonsContainer.innerHTML += filterButtons
   if (filter === 'all') {
     calculateTotalNumberOfPages(arrayAllTodo.length)
     return ;
@@ -204,6 +147,12 @@ const renderFilterButtonsContainer = () => {
     }
     return unfulfilledArr
   }
+}
+const render = () => {
+  const returnArray = renderFilterButtonsContainer()
+  renderTodo(returnArray)
+  renderBtnShowMore()
+  renderPagination()
 }
 
 const changeFilter = (event) => {
