@@ -21,7 +21,58 @@ const FILTER_ENUMERATION = {
 let countPage = 1;
 let currentPage = 1;
 let countTodosOnPage = 5;
-let arrayAllTodo = [];
+let arrayAllTodo = [
+  {
+    id: 0,
+    text: 1,
+    isChecked: false,
+  },
+  {
+    id: 1,
+    text: 2,
+    isChecked: true,
+  },
+  {
+    id: 2,
+    text: 3,
+    isChecked: false,
+  },
+  {
+    id: 3,
+    text: 4,
+    isChecked: false,
+  },
+  {
+    id: 4,
+    text: 5,
+    isChecked: true,
+  },
+  {
+    id: 5,
+    text: 6,
+    isChecked: false,
+  },
+  {
+    id: 6,
+    text: 7,
+    isChecked: true,
+  },
+  {
+    id: 7,
+    text: 8,
+    isChecked: false,
+  },
+  {
+    id: 8,
+    text: 9,
+    isChecked: false,
+  },
+  {
+    id: 9,
+    text: 0,
+    isChecked: true,
+  },
+];
 let filter = FILTER_ENUMERATION.all;
 
 const validationText = (text) => {
@@ -98,7 +149,7 @@ const renderPagination = () => {
 
 const renderTodo = (arrayTodos = arrayAllTodo) => {
   containerTodo.innerHTML = '';
-  getNumberPages(arrayTodos.length);
+  getNumberPages(!arrayTodos.length ? 1 : arrayTodos.length);
   currentPage = currentPage >= countPage ? countPage : currentPage;
   const paginationArr = trimArrayByPage(arrayTodos, currentPage);
   paginationArr.forEach(element => {
@@ -125,31 +176,24 @@ const renderFilterButtonsContainer = () => {
   const completedArr = arrayAllTodo.filter(todo => todo.isChecked);
   const unfulfilledArr = arrayAllTodo.filter(todo => !todo.isChecked);
   const filterButtons =
-        `<button id='All'>Все (${arrayAllTodo.length})</button>
-        <button id='Completed'>Выполненные (${completedArr.length})</button>
-        <button id='Unfulfilled'>Не выполненные (${unfulfilledArr.length})</button>`;
+        `<button id='All' 
+        class='${filter === FILTER_ENUMERATION.all ? 'active': ''}'>
+        Все (${arrayAllTodo.length})</button>
+        <button id='Completed' 
+        class='${filter === FILTER_ENUMERATION.completed ? 'active': ''}'>
+        Выполненные (${completedArr.length})</button>
+        <button id='Unfulfilled' 
+        class='${filter === FILTER_ENUMERATION.unfulfilled ? 'active': ''}'>
+        Не выполненные (${unfulfilledArr.length})</button>`;
   filterButtonsContainer.innerHTML += filterButtons;
   switch (filter) {
   case FILTER_ENUMERATION.all:
-    getNumberPages(arrayAllTodo.length);
     return;
 
   case FILTER_ENUMERATION.completed:
-    getNumberPages(completedArr.length);
-    if (!completedArr.length) {
-      filter = FILTER_ENUMERATION.all;
-      return ;
-    }
-
     return completedArr;
 
   case FILTER_ENUMERATION.unfulfilled:
-    getNumberPages(unfulfilledArr.length);
-    if (!unfulfilledArr.length) {
-      filter = FILTER_ENUMERATION.all;
-      return ;
-    }
-
     return unfulfilledArr;
 
   default:
@@ -190,7 +234,7 @@ const changeTask = (event) =>{
   const arrElementId = arrayAllTodo.findIndex(todo => todo.id === todoId);
   const activityCheck = arrayAllTodo.every((todo) => todo.isChecked);
   const newArr = arrayAllTodo.filter(todo => todo.id !== todoId);
-  switch (event.target.class) {
+  switch (event.target.className) {
   case 'todo-list_text':
     if (event.detail === DOUBLE_CLIK) {
       const todoItemReset = event.target.nextElementSibling;
@@ -266,7 +310,7 @@ const removeAllCheckElementArr = (event) => {
 
 const checkAllElementArr = (event) => {
   arrayAllTodo.forEach(todo => todo.isChecked = event.target.checked);
-  renderTodo();
+  render();
 };
 
 getNumberPages(arrayAllTodo.length);

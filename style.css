@@ -65,7 +65,7 @@ button {
 }
 
 .todo-list_text {
-  overflow: hidden;
+  word-break: break-all;
 }
 
 .todo-list_reset-text {
@@ -106,10 +106,18 @@ button {
   margin: 10px 0;
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
 }
 
 .page {
   border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #showMoreContainer {
