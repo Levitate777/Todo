@@ -21,58 +21,7 @@ const FILTER_ENUMERATION = {
 let countPage = 1;
 let currentPage = 1;
 let countTodosOnPage = 5;
-let arrayAllTodo = [
-  {
-    id: 0,
-    text: 1,
-    isChecked: false,
-  },
-  {
-    id: 1,
-    text: 2,
-    isChecked: true,
-  },
-  {
-    id: 2,
-    text: 3,
-    isChecked: false,
-  },
-  {
-    id: 3,
-    text: 4,
-    isChecked: false,
-  },
-  {
-    id: 4,
-    text: 5,
-    isChecked: true,
-  },
-  {
-    id: 5,
-    text: 6,
-    isChecked: false,
-  },
-  {
-    id: 6,
-    text: 7,
-    isChecked: true,
-  },
-  {
-    id: 7,
-    text: 8,
-    isChecked: false,
-  },
-  {
-    id: 8,
-    text: 9,
-    isChecked: false,
-  },
-  {
-    id: 9,
-    text: 0,
-    isChecked: true,
-  },
-];
+let arrayAllTodo = [];
 let filter = FILTER_ENUMERATION.all;
 
 const validationText = (text) => {
@@ -81,7 +30,7 @@ const validationText = (text) => {
 
 const addTodo = (event) => {
   event.preventDefault();
-  if (!(inputTodo.value.trim() === '')) {
+  if (inputTodo.value.trim()) {
     const textValidation = validationText(inputTodo.value);
     const newTodo = {
       id: Date.now(),
@@ -121,14 +70,8 @@ const changePage = (event) => {
 };
 
 const renderBtnShowMore = () => {
-  if (arrayAllTodo.length <= TOTAL_COUNT_TODOS_ON_PAGE) {
-    return;
-  }
-
-  if (currentPage === countPage) {
-    return;
-  }
-
+  if (arrayAllTodo.length <= TOTAL_COUNT_TODOS_ON_PAGE) return;
+  if (currentPage === countPage) return;
   const btnShowMore =
           `<div id="showMoreContainer">
             <button class="showMore">Давай больше</button>
@@ -149,8 +92,9 @@ const renderPagination = () => {
 
 const renderTodo = (arrayTodos = arrayAllTodo) => {
   containerTodo.innerHTML = '';
-  getNumberPages(!arrayTodos.length ? 1 : arrayTodos.length);
-  currentPage = currentPage >= countPage ? countPage : currentPage;
+  const newLength = !arrayTodos.length ? 1 : arrayTodos.length;
+  getNumberPages(newLength);
+  if (currentPage >= countPage) currentPage = countPage;
   const paginationArr = trimArrayByPage(arrayTodos, currentPage);
   paginationArr.forEach(element => {
     const todo =
@@ -176,13 +120,13 @@ const renderFilterButtonsContainer = () => {
   const completedArr = arrayAllTodo.filter(todo => todo.isChecked);
   const unfulfilledArr = arrayAllTodo.filter(todo => !todo.isChecked);
   const filterButtons =
-        `<button id='All' 
+        `<button id='${FILTER_ENUMERATION.all}' 
         class='${filter === FILTER_ENUMERATION.all ? 'active': ''}'>
         Все (${arrayAllTodo.length})</button>
-        <button id='Completed' 
+        <button id='${FILTER_ENUMERATION.completed}' 
         class='${filter === FILTER_ENUMERATION.completed ? 'active': ''}'>
         Выполненные (${completedArr.length})</button>
-        <button id='Unfulfilled' 
+        <button id='${FILTER_ENUMERATION.unfulfilled}' 
         class='${filter === FILTER_ENUMERATION.unfulfilled ? 'active': ''}'>
         Не выполненные (${unfulfilledArr.length})</button>`;
   filterButtonsContainer.innerHTML += filterButtons;
@@ -275,9 +219,7 @@ const rewriteTodo = (event) => {
     return;
   }
 
-  if (!(event.keyCode === ENTER_KEY || event.type === 'blur')) {
-    return;
-  }
+  if (!(event.keyCode === ENTER_KEY || event.type === 'blur')) return;
 
   if (event.target.matches('.todo-list_reset-text')) {
     const numberInputInTodoList = 5;
