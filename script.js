@@ -24,7 +24,7 @@
   let countTodosOnPage = 5;
   let arrayAllTodo = [];
   let filter = FILTER_ENUMERATION.all;
-  let isFlagESC = true;
+  let isFlagESC = false;
 
   const validationText = (text) => {
     return text.trim().replace(/ {2,}/g, ' ').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -44,8 +44,9 @@
       inputTodo.focus();
       getNumberPages(arrayAllTodo.length);
       if (currentPage !== countPage) currentPage = countPage;
-      if (filter === FILTER_ENUMERATION.completed) filter = FILTER_ENUMERATION.all;
+      filter = FILTER_ENUMERATION.all;
       checkAll.checked = false;
+      countTodosOnPage = TOTAL_COUNT_TODOS_ON_PAGE;
       render();
     }
   };
@@ -157,6 +158,7 @@
 
   const render = () => {
     const returnArray = renderFilterButtonsContainer();
+    checkAll.disabled = !arrayAllTodo.length;
     renderTodo(returnArray);
     renderBtnShowMore(returnArray);
     renderPagination();
@@ -197,6 +199,7 @@
         todoItemReset.hidden = '';
         textTodoOld.hidden = 'false';
         todoItemReset.focus();
+        isFlagESC = !isFlagESC;
       }
 
       break;
@@ -208,6 +211,8 @@
       break;
     case 'todo-list-button':
       arrayAllTodo = newArr;
+      activityCheck = arrayAllTodo.every((todo) => todo.isChecked);
+      checkAll.checked = newArr.length;
       render();
       break;
     case 'showMore':
@@ -226,29 +231,21 @@
     const arrElementId = arrayAllTodo.findIndex(todo => todo.id === todoId);
     if (event.keyCode === ESC_KEY) {
       isFlagESC = !isFlagESC;
-      //console.log('flag esc', isFlagESC);
       return renderTodo();
     }
 
-    console.log(event.type === 'blur');
-    console.log('flag before', isFlagESC);
-    if ((event.keyCode === ENTER_KEY && isFlagESC) || (event.type === 'blur')) {
-      //if (event.type === 'blur') {
+    if ((event.keyCode === ENTER_KEY || event.type === 'blur') && isFlagESC) {
       isFlagESC = !isFlagESC;
-      //}
-
-      console.log('flag after', isFlagESC);
       const numberInputInTodoList = 2;
       const todoItem = todoList.children[numberInputInTodoList];
       const text = validationText(todoItem.value);
       if (!text.length) {
         renderTodo();
         renderBtnShowMore();
+      } else {
+        arrayAllTodo[arrElementId].text = text;
+        render();
       }
-
-      arrayAllTodo[arrElementId].text = text;
-      console.log(arrayAllTodo);
-      render();
     }
   };
 
