@@ -288,8 +288,6 @@
         }).catch(error => {
           window.alert(error.message);
         });
-        //arrayAllTodo[arrElementId].text = text;
-        //render();
       }
     }
   };
@@ -303,9 +301,16 @@
     render();
   };
 
-  const checkAllElementArr = (event) => {
-    arrayAllTodo.forEach(todo => todo.isChecked = event.target.checked);
-    render();
+  const checkAllElementArr = async (event) => {
+    await fetch(`${URL}/check-all`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({isChecked: event.target.checked})
+    }).then( () => {
+      render();
+    });
   };
 
   render();
