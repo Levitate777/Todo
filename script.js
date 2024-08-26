@@ -6,6 +6,9 @@
   const checkAll = document.querySelector('#checkboxCheckAll');
   const filterButtonsContainer = document.querySelector('#filter');
   const paginationContainer = document.querySelector('#pagination');
+  const modalWindow = document.querySelector('#modal-window');
+  const textModalWindow = document.querySelector('#modal-text');
+  const closeBtnModalWindow = document.querySelector('#modal-close');
 
   const TOTAL_COUNT_TODOS_ON_PAGE = 5;
   const QUANTITY_TODOS_ADDITION = 5;
@@ -67,7 +70,7 @@
         countTodosOnPage = TOTAL_COUNT_TODOS_ON_PAGE;
         render();
       }).catch((error) => {
-        window.alert(error.message);
+        showModal(error.message);
       });
     }
   };
@@ -185,7 +188,7 @@
       },
     }).then(response => response.json())
       .then((array) => arrayAllTodo = [...array])
-      .catch(error => window.alert(error.message));
+      .catch(error => showModal(error.message));
     getNumberPages(arrayAllTodo.length);
     const returnArray = renderFilterButtonsContainer();
     checkAll.checked = arrayAllTodo.every((todo) => todo.isChecked);
@@ -240,7 +243,7 @@
         body: JSON.stringify({isChecked: !arrayAllTodo[arrElementId].isChecked})
       }).then( () => {
         render();
-      }).catch(error => window.alert(error.message));
+      }).catch(error => showModal(error.message));
       break;
     case 'todo-list-button':
       await fetch(`${URL}/delete/${todoId}`, {
@@ -249,7 +252,7 @@
           'Content-Type': 'application/json',
         },
       }).then( () => render())
-        .catch(error => window.alert(error.message));
+        .catch(error => showModal(error.message));
       break;
     case 'showMore':
       countTodosOnPage += QUANTITY_TODOS_ADDITION;
@@ -286,7 +289,7 @@
         }).then( () => {
           render();
         }).catch(error => {
-          window.alert(error.message);
+          showModal(error.message);
         });
       }
     }
@@ -317,6 +320,15 @@
     });
   };
 
+  const showModal = (message) => {
+    textModalWindow.textContent = message;
+    modalWindow.style.display = 'block';
+  };
+
+  const closeModal = () => {
+    modalWindow.style.display = 'none';
+  };
+
   render();
 
   buttonSubmit.addEventListener('click', addTodo);
@@ -328,4 +340,5 @@
   checkAll.addEventListener('click', checkAllElementArr);
   filterButtonsContainer.addEventListener('click', changeFilter);
   paginationContainer.addEventListener('click', changePage);
+  closeBtnModalWindow.addEventListener('click', closeModal);
 })();

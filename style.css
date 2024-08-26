@@ -131,3 +131,28 @@ button {
   width: 100%;
   margin: 20px auto 10px auto;
 }
+
+#modal-window {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100vw - 15%);
+  text-align: center;
+  padding: 10px 20px;
+  border: 3px solid rgb(0, 128, 128);
+}
+
+#modal-head {
+  font-size: 28px;
+  margin-bottom: 15px;
+}
+
+#modal-close {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 28px;
+  cursor: pointer;
+}
