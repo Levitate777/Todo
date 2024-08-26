@@ -292,13 +292,17 @@
     }
   };
 
-  const removeAllCheckElementArr = (event) => {
+  const removeAllCheckElementArr = async (event) => {
     event.preventDefault();
-    const newArr = arrayAllTodo.filter(todo => !todo.isChecked);
-    arrayAllTodo = newArr;
-    getNumberPages(arrayAllTodo.length);
-    currentActivePage = currentPage = 1;
-    render();
+    await fetch(`${URL}/delete-all-checked`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then( () => {
+      currentActivePage = currentPage = 1;
+      render();
+    });
   };
 
   const checkAllElementArr = async (event) => {
