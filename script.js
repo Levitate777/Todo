@@ -18,6 +18,7 @@
     unfulfilled: 'unfulfilled'
   };
   const URL = 'http://localhost:3000/api/todo';
+  const NUMBER_INPUT_IN_TODO_LIST = 2;
 
   let countPage = 1;
   let currentPage = 1;
@@ -28,7 +29,12 @@
   let isFlagESC = false;
 
   const validationText = (text) => {
-    return text.trim().replace(/ {2,}/g, ' ').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return text
+      .trim()
+      .replace(/ {2,}/g, ' ')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"|'/g, '\'');
   };
 
   const addTodo = async (event) => {
@@ -44,6 +50,12 @@
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(newTodo),
+      }).then((res) => {
+        if (!res.ok) {
+          throw new Error('text must be shorter than or equal to 255 characters');
+        }
+
+        return res.json();
       }).then(() => {
         inputTodo.value = '';
         inputTodo.focus();
@@ -54,7 +66,9 @@
         checkAll.checked = false;
         countTodosOnPage = TOTAL_COUNT_TODOS_ON_PAGE;
         render();
-      }).catch(error => window.alert(error.message));
+      }).catch((error) => {
+        window.alert(error.message);
+      });
     }
   };
 
@@ -174,7 +188,7 @@
       .catch(error => window.alert(error.message));
     getNumberPages(arrayAllTodo.length);
     const returnArray = renderFilterButtonsContainer();
-    checkAll.disabled = !arrayAllTodo.length;
+    checkAll.checked = arrayAllTodo.every((todo) => todo.isChecked);
     renderTodo(returnArray);
     renderBtnShowMore(returnArray);
     renderPagination();
@@ -205,7 +219,6 @@
   const changeTask = async (event) =>{
     const todoId = parseInt(event.target.parentNode.dataset.id);
     const arrElementId = arrayAllTodo.findIndex(todo => todo.id === todoId);
-    let activityCheck;
     switch (event.target.className) {
     case 'todo-list_text':
       if (event.detail === DOUBLE_CLIK) {
@@ -219,20 +232,24 @@
 
       break;
     case 'checkbox':
-      arrayAllTodo[arrElementId].isChecked = !arrayAllTodo[arrElementId].isChecked;
-      activityCheck = arrayAllTodo.every((todo) => todo.isChecked);
-      checkAll.checked = activityCheck;
-      render();
+      await fetch(`${URL}/update/${todoId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({isChecked: !arrayAllTodo[arrElementId].isChecked})
+      }).then( () => {
+        render();
+      }).catch(error => window.alert(error.message));
       break;
     case 'todo-list-button':
-      await fetch(`${URL}/${todoId}`, {
+      await fetch(`${URL}/delete/${todoId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-      }).catch(error => window.alert(error.message));
-      render();
-      activityCheck = arrayAllTodo.every((todo) => todo.isChecked);
+      }).then( () => render())
+        .catch(error => window.alert(error.message));
       break;
     case 'showMore':
       countTodosOnPage += QUANTITY_TODOS_ADDITION;
@@ -244,10 +261,9 @@
     }
   };
 
-  const rewriteTodo = (event) => {
+  const rewriteTodo = async (event) => {
     const todoList = event.target.parentNode;
     const todoId = parseInt(todoList.dataset.id);
-    const arrElementId = arrayAllTodo.findIndex(todo => todo.id === todoId);
     if (event.keyCode === ESC_KEY) {
       isFlagESC = !isFlagESC;
       return renderTodo();
@@ -255,15 +271,25 @@
 
     if ((event.keyCode === ENTER_KEY || event.type === 'blur') && isFlagESC) {
       isFlagESC = !isFlagESC;
-      const numberInputInTodoList = 2;
-      const todoItem = todoList.children[numberInputInTodoList];
-      const text = validationText(todoItem.value);
-      if (!text.length) {
+      const todoItem = todoList.children[NUMBER_INPUT_IN_TODO_LIST];
+      const validatedText = validationText(todoItem.value);
+      if (!validatedText.length) {
         renderTodo();
         renderBtnShowMore();
       } else {
-        arrayAllTodo[arrElementId].text = text;
-        render();
+        await fetch(`${URL}/update/${todoId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: validatedText}),
+        }).then( () => {
+          render();
+        }).catch(error => {
+          window.alert(error.message);
+        });
+        //arrayAllTodo[arrElementId].text = text;
+        //render();
       }
     }
   };
@@ -282,7 +308,6 @@
     render();
   };
 
-  //getNumberPages(arrayAllTodo.length);
   render();
 
   buttonSubmit.addEventListener('click', addTodo);
