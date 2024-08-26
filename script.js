@@ -17,11 +17,12 @@
     completed: 'completed',
     unfulfilled: 'unfulfilled'
   };
+  const URL = 'http://localhost:3000/api/todo';
 
   let countPage = 1;
   let currentPage = 1;
   let currentActivePage = 1;
-  let countTodosOnPage = 5;
+  let countTodosOnPage = TOTAL_COUNT_TODOS_ON_PAGE;
   let arrayAllTodo = [];
   let filter = FILTER_ENUMERATION.all;
   let isFlagESC = false;
@@ -30,24 +31,30 @@
     return text.trim().replace(/ {2,}/g, ' ').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   };
 
-  const addTodo = (event) => {
+  const addTodo = async (event) => {
     event.preventDefault();
     if (inputTodo.value.trim()) {
       const validatedText = validationText(inputTodo.value);
       const newTodo = {
-        id: Date.now(),
         text: validatedText,
-        isChecked: false,
       };
-      arrayAllTodo.push(newTodo);
-      inputTodo.value = '';
-      inputTodo.focus();
-      getNumberPages(arrayAllTodo.length);
-      if (currentPage !== countPage) currentPage = countPage;
-      filter = FILTER_ENUMERATION.all;
-      checkAll.checked = false;
-      countTodosOnPage = TOTAL_COUNT_TODOS_ON_PAGE;
-      render();
+      await fetch(`${URL}/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTodo),
+      }).then(() => {
+        inputTodo.value = '';
+        inputTodo.focus();
+        const condition = Math.ceil(arrayAllTodo.length+1 / TOTAL_COUNT_TODOS_ON_PAGE);
+        if (countPage !== condition) countPage = condition;
+        if (currentPage !== countPage) currentActivePage = currentPage = countPage;
+        filter = FILTER_ENUMERATION.all;
+        checkAll.checked = false;
+        countTodosOnPage = TOTAL_COUNT_TODOS_ON_PAGE;
+        render();
+      }).catch(error => window.alert(error.message));
     }
   };
 
@@ -156,7 +163,16 @@
     }
   };
 
-  const render = () => {
+  const render = async () => {
+    await fetch(`${URL}/all`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then(response => response.json())
+      .then((array) => arrayAllTodo = [...array])
+      .catch(error => window.alert(error.message));
+    getNumberPages(arrayAllTodo.length);
     const returnArray = renderFilterButtonsContainer();
     checkAll.disabled = !arrayAllTodo.length;
     renderTodo(returnArray);
@@ -186,11 +202,10 @@
     }
   };
 
-  const changeTask = (event) =>{
+  const changeTask = async (event) =>{
     const todoId = parseInt(event.target.parentNode.dataset.id);
     const arrElementId = arrayAllTodo.findIndex(todo => todo.id === todoId);
     let activityCheck;
-    const newArr = arrayAllTodo.filter(todo => todo.id !== todoId);
     switch (event.target.className) {
     case 'todo-list_text':
       if (event.detail === DOUBLE_CLIK) {
@@ -210,10 +225,14 @@
       render();
       break;
     case 'todo-list-button':
-      arrayAllTodo = newArr;
-      activityCheck = arrayAllTodo.every((todo) => todo.isChecked);
-      checkAll.checked = newArr.length;
+      await fetch(`${URL}/${todoId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).catch(error => window.alert(error.message));
       render();
+      activityCheck = arrayAllTodo.every((todo) => todo.isChecked);
       break;
     case 'showMore':
       countTodosOnPage += QUANTITY_TODOS_ADDITION;
@@ -263,7 +282,7 @@
     render();
   };
 
-  getNumberPages(arrayAllTodo.length);
+  //getNumberPages(arrayAllTodo.length);
   render();
 
   buttonSubmit.addEventListener('click', addTodo);
