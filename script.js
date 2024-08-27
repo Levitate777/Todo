@@ -44,6 +44,9 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
   const getTodos = async () => {
     const allTodos = await getAlltodos();
     arrayAllTodo = [...allTodos];
+    if (arrayAllTodo.length) {
+      checkAll.checked = arrayAllTodo.every((todo) => todo.isChecked);
+    }
     showModal(allTodos)
     render();
   };
@@ -178,7 +181,6 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
     getNumberPages(arrayAllTodo.length);
     const returnArray = renderFilterButtonsContainer();
     checkAll.disabled = !arrayAllTodo.length;
-    checkAll.checked = arrayAllTodo.every((todo) => todo.isChecked);
     renderTodo(returnArray);
     renderBtnShowMore(returnArray);
     renderPagination();
@@ -209,6 +211,7 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
   const changeTask = async (event) =>{
     const todoId = parseInt(event.target.parentNode.dataset.id);
     const arrElementId = arrayAllTodo.findIndex(todo => todo.id === todoId);
+    const newArr = arrayAllTodo.filter(todo => todo.id !== todoId);
     switch (event.target.className) {
     case 'todo-list_text':
       if (event.detail === DOUBLE_CLIK) {
@@ -224,11 +227,17 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
     case 'checkbox':
       const updateTodo = await updateCheckboxTodo(todoId, !arrayAllTodo[arrElementId].isChecked);
       showModal(updateTodo);
-      getTodos();
+      arrayAllTodo[arrElementId].isChecked = !arrayAllTodo[arrElementId].isChecked;
+      checkAll.checked = arrayAllTodo.every((todo) => todo.isChecked);
+      render();
+      //getTodos();
       break;
     case 'todo-list-button':
       const deleteTodo = await deleteOneTodo(todoId);
       showModal(deleteTodo);
+      arrayAllTodo = newArr;
+      checkAll.checked = newArr.length;
+      //render();
       getTodos();
       break;
     case 'showMore':
@@ -259,7 +268,9 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
       } else {
         const updateText = await updateTextTodo(todoId, todoItem.value);
         showModal(updateText);
-        getTodos();
+        arrayAllTodo[arrElementId].text = text;
+        render();
+        //getTodos();
       }
     }
   };
@@ -275,7 +286,9 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
   const checkAllElementArr = async (event) => {
     const check = await checkAllTodo(event.target.checked);
     showModal(check);
-    getTodos();
+    arrayAllTodo.forEach(todo => todo.isChecked = event.target.checked);
+    render();
+    //getTodos();
   };
 
   const showModal = (message) => {
@@ -297,7 +310,6 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
   };
 
   getTodos();
-  //render();
 
   buttonSubmit.addEventListener('click', addTodo);
   inputTodo.addEventListener('keydown', addTodosByPressingEnter);
