@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ToDoList</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" defer></script>
   </head>
   <body>
     <div class="container">
       <h1>ToDo</h1>
       <div id="addText">
-        <input id="addTodoItem" type="text" placeholder="пиши меня" maxlength="255">
+        <input id="addTodoItem" type="text" placeholder="пиши меня" maxlength="256">
         <button id="submitTodo">Зжимай</button>
       </div>
 
@@ -39,6 +40,6 @@
       <p id="modal-text">nhnge rthrgethreg tttt rwrrere 4565343 252352352</p>
     </dialog>
     
-    <script src="script.js"></script>
+    <script src="script.js" type="module"></script>
   </body>
 </html>

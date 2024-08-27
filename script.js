@@ -1,3 +1,5 @@
+import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAlltodos, updateCheckboxTodo, updateTextTodo } from "./api.js";
+
 (() => {
   const inputTodo = document.querySelector('#addTodoItem');
   const buttonSubmit = document.querySelector('#submitTodo');
@@ -20,8 +22,12 @@
     completed: 'completed',
     unfulfilled: 'unfulfilled'
   };
-  const URL = 'http://localhost:3000/api/todo';
+
+  //const URL = 'https://api.t4.academy.dunice-testing.com/api/todos';
+  const URL = 'http://localhost:3000/api/todos';
+
   const NUMBER_INPUT_IN_TODO_LIST = 2;
+  const TIME_OF_APPEARANCE_MODAL = 4000;
 
   let countPage = 1;
   let currentPage = 1;
@@ -32,46 +38,33 @@
   let isFlagESC = false;
 
   const validationText = (text) => {
-    return text
-      .trim()
-      .replace(/ {2,}/g, ' ')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"|'/g, '\'');
+    return _.escape(text.trim().replace(/s+/g, ' '));
+  };
+
+  const getTodos = async () => {
+    const allTodos = await getAlltodos();
+    arrayAllTodo = [...allTodos];
+    showModal(allTodos)
+    render();
   };
 
   const addTodo = async (event) => {
     event.preventDefault();
     if (inputTodo.value.trim()) {
-      const validatedText = validationText(inputTodo.value);
       const newTodo = {
-        text: validatedText,
+        text: inputTodo.value,
       };
-      await fetch(`${URL}/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newTodo),
-      }).then((res) => {
-        if (!res.ok) {
-          throw new Error('text must be shorter than or equal to 255 characters');
-        }
-
-        return res.json();
-      }).then(() => {
-        inputTodo.value = '';
-        inputTodo.focus();
-        const condition = Math.ceil(arrayAllTodo.length+1 / TOTAL_COUNT_TODOS_ON_PAGE);
-        if (countPage !== condition) countPage = condition;
-        if (currentPage !== countPage) currentActivePage = currentPage = countPage;
-        filter = FILTER_ENUMERATION.all;
-        checkAll.checked = false;
-        countTodosOnPage = TOTAL_COUNT_TODOS_ON_PAGE;
-        render();
-      }).catch((error) => {
-        showModal(error.message);
-      });
+      const todo = await createTodo(newTodo);
+      showModal(todo);
+      inputTodo.value = '';
+      inputTodo.focus();
+      const condition = Math.ceil(arrayAllTodo.length+1 / TOTAL_COUNT_TODOS_ON_PAGE);
+      if (countPage !== condition) countPage = condition;
+      if (currentPage !== countPage) currentActivePage = currentPage = countPage;
+      filter = FILTER_ENUMERATION.all;
+      checkAll.checked = false;
+      countTodosOnPage = TOTAL_COUNT_TODOS_ON_PAGE;
+      getTodos();
     }
   };
 
@@ -125,20 +118,21 @@
     if (currentPage >= countPage) currentActivePage = currentPage = countPage;
     const paginationArr = trimArrayByPage(arrayTodos, currentPage);
     paginationArr.forEach(todo => {
+      const validatedText = validationText(todo.text);
       const todoHTML =
         `<li data-id=${todo.id} class="todo-list_item">
             <input 
               type="checkbox" 
               class="checkbox" ${todo.isChecked ? 'checked' : ''}
             >
-            <p class="todo-list_text">${todo.text}</p>
+            <p class="todo-list_text">${validatedText}</p>
             <input 
               type="text" 
               class="todo-list_reset-text" 
               placeholder="перепиши меня" 
-              value="${todo.text}"
+              value="${validatedText}"
               hidden="hidden"
-              maxlength="255"
+              maxlength="256"
             >
             <button class="todo-list-button">X</button>
         </li>`;
@@ -181,16 +175,9 @@
   };
 
   const render = async () => {
-    await fetch(`${URL}/all`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then(response => response.json())
-      .then((array) => arrayAllTodo = [...array])
-      .catch(error => showModal(error.message));
     getNumberPages(arrayAllTodo.length);
     const returnArray = renderFilterButtonsContainer();
+    checkAll.disabled = !arrayAllTodo.length;
     checkAll.checked = arrayAllTodo.every((todo) => todo.isChecked);
     renderTodo(returnArray);
     renderBtnShowMore(returnArray);
@@ -235,24 +222,14 @@
 
       break;
     case 'checkbox':
-      await fetch(`${URL}/update/${todoId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({isChecked: !arrayAllTodo[arrElementId].isChecked})
-      }).then( () => {
-        render();
-      }).catch(error => showModal(error.message));
+      const updateTodo = await updateCheckboxTodo(todoId, !arrayAllTodo[arrElementId].isChecked);
+      showModal(updateTodo);
+      getTodos();
       break;
     case 'todo-list-button':
-      await fetch(`${URL}/delete/${todoId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }).then( () => render())
-        .catch(error => showModal(error.message));
+      const deleteTodo = await deleteOneTodo(todoId);
+      showModal(deleteTodo);
+      getTodos();
       break;
     case 'showMore':
       countTodosOnPage += QUANTITY_TODOS_ADDITION;
@@ -267,6 +244,7 @@
   const rewriteTodo = async (event) => {
     const todoList = event.target.parentNode;
     const todoId = parseInt(todoList.dataset.id);
+    const arrElementId = arrayAllTodo.findIndex(todo => todo.id === todoId);
     if (event.keyCode === ESC_KEY) {
       isFlagESC = !isFlagESC;
       return renderTodo();
@@ -275,61 +253,51 @@
     if ((event.keyCode === ENTER_KEY || event.type === 'blur') && isFlagESC) {
       isFlagESC = !isFlagESC;
       const todoItem = todoList.children[NUMBER_INPUT_IN_TODO_LIST];
-      const validatedText = validationText(todoItem.value);
-      if (!validatedText.length) {
+      if (!todoItem.value.length || arrayAllTodo[arrElementId].text === todoItem.value) {
         renderTodo();
         renderBtnShowMore();
       } else {
-        await fetch(`${URL}/update/${todoId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ text: validatedText}),
-        }).then( () => {
-          render();
-        }).catch(error => {
-          showModal(error.message);
-        });
+        const updateText = await updateTextTodo(todoId, todoItem.value);
+        showModal(updateText);
+        getTodos();
       }
     }
   };
 
   const removeAllCheckElementArr = async (event) => {
     event.preventDefault();
-    await fetch(`${URL}/delete-all-checked`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then( () => {
-      currentActivePage = currentPage = 1;
-      render();
-    });
+    const deleteAll = await deleteAllCheckedTodo();
+    showModal(deleteAll);
+    currentActivePage = currentPage = 1;
+    getTodos();
   };
 
   const checkAllElementArr = async (event) => {
-    await fetch(`${URL}/check-all`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({isChecked: event.target.checked})
-    }).then( () => {
-      render();
-    });
+    const check = await checkAllTodo(event.target.checked);
+    showModal(check);
+    getTodos();
   };
 
   const showModal = (message) => {
-    textModalWindow.textContent = message;
-    modalWindow.style.display = 'block';
+    if (message !== 'delete one todo' 
+      && message !== 'delete all checked todo' 
+      && message !== 'update check all completed') {
+      if (typeof message === 'string') {
+        textModalWindow.textContent = message;
+        modalWindow.style.opacity = '1';
+        modalWindow.style.visibility = 'visible';
+        setTimeout(() => closeModal(), TIME_OF_APPEARANCE_MODAL);
+      }
+    }
   };
 
   const closeModal = () => {
-    modalWindow.style.display = 'none';
+    modalWindow.style.opacity = '0';
+    modalWindow.style.visibility = 'hidden';
   };
 
-  render();
+  getTodos();
+  //render();
 
   buttonSubmit.addEventListener('click', addTodo);
   inputTodo.addEventListener('keydown', addTodosByPressingEnter);
