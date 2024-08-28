@@ -49,8 +49,13 @@ button {
   border: 3px solid rgba(0, 128, 128, 1);
 }
 
-#containerTodo {
+#content-container {
+  position: relative;
   width: calc(100% - 50px);
+}
+
+#containerTodo {
+  width: 100%;
 }
 
 .todo-list_item {
@@ -82,10 +87,38 @@ button {
   font-size: 32px;
   font-weight: 900;
 }
+
 .todo-list-button:active {
   background-color: rgb(195, 0, 0);
 }
 
+#loader-container {
+  width: 100%;
+  height: 552px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#loader {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 8px dashed rgb(0, 128, 128);
+  animation: 4s linear infinite rotate;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.6);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
 
 #changeList{
   margin: 10px 0;

@@ -11,6 +11,7 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
   const modalWindow = document.querySelector('#modal-window');
   const textModalWindow = document.querySelector('#modal-text');
   const closeBtnModalWindow = document.querySelector('#modal-close');
+  const contentContainer = document.querySelector('#content-container');
 
   const TOTAL_COUNT_TODOS_ON_PAGE = 5;
   const QUANTITY_TODOS_ADDITION = 5;
@@ -23,11 +24,8 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
     unfulfilled: 'unfulfilled'
   };
 
-  //const URL = 'https://api.t4.academy.dunice-testing.com/api/todos';
-  const URL = 'http://localhost:3000/api/todos';
-
   const NUMBER_INPUT_IN_TODO_LIST = 2;
-  const TIME_OF_APPEARANCE_MODAL = 4000;
+  const TIME_OF_APPEARANCE_MODAL = 3000;
 
   let countPage = 1;
   let currentPage = 1;
@@ -42,6 +40,7 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
   };
 
   const getTodos = async () => {
+    showLoader();
     const allTodos = await getAlltodos();
     arrayAllTodo = [...allTodos];
     if (arrayAllTodo.length) {
@@ -57,17 +56,21 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
       const newTodo = {
         text: inputTodo.value,
       };
-      const todo = await createTodo(newTodo);
-      showModal(todo);
       inputTodo.value = '';
       inputTodo.focus();
-      const condition = Math.ceil(arrayAllTodo.length+1 / TOTAL_COUNT_TODOS_ON_PAGE);
-      if (countPage !== condition) countPage = condition;
-      if (currentPage !== countPage) currentActivePage = currentPage = countPage;
-      filter = FILTER_ENUMERATION.all;
-      checkAll.checked = false;
-      countTodosOnPage = TOTAL_COUNT_TODOS_ON_PAGE;
-      getTodos();
+      showLoader();
+      const todo = await createTodo(newTodo);
+      showModal(todo);
+      if (!('message' in todo)) {
+        arrayAllTodo.push(todo);
+        const condition = Math.ceil(arrayAllTodo.length+1 / TOTAL_COUNT_TODOS_ON_PAGE);
+        if (countPage !== condition) countPage = condition;
+        if (currentPage !== countPage) currentActivePage = currentPage = countPage;
+        filter = FILTER_ENUMERATION.all;
+        checkAll.checked = false;
+        countTodosOnPage = TOTAL_COUNT_TODOS_ON_PAGE;
+        render();
+      }
     }
   };
 
@@ -225,20 +228,26 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
 
       break;
     case 'checkbox':
+      event.preventDefault();
+      checkAll.disabled = true;
       const updateTodo = await updateCheckboxTodo(todoId, !arrayAllTodo[arrElementId].isChecked);
+      console.log(updateTodo);
       showModal(updateTodo);
-      arrayAllTodo[arrElementId].isChecked = !arrayAllTodo[arrElementId].isChecked;
+      arrayAllTodo[arrElementId].isChecked = updateTodo.isChecked;
       checkAll.checked = arrayAllTodo.every((todo) => todo.isChecked);
       render();
-      //getTodos();
       break;
     case 'todo-list-button':
+      console.log('todoId = ', todoId);
+      arrayAllTodo = newArr;
+      if (arrayAllTodo.length) {
+        checkAll.checked = arrayAllTodo.every((todo) => todo.isChecked);
+      }
+      showLoader();
       const deleteTodo = await deleteOneTodo(todoId);
       showModal(deleteTodo);
-      arrayAllTodo = newArr;
-      checkAll.checked = newArr.length;
-      //render();
-      getTodos();
+      console.log(deleteTodo);
+      render();
       break;
     case 'showMore':
       countTodosOnPage += QUANTITY_TODOS_ADDITION;
@@ -266,48 +275,67 @@ import { checkAllTodo, createTodo, deleteAllCheckedTodo, deleteOneTodo, getAllto
         renderTodo();
         renderBtnShowMore();
       } else {
+        showLoader();
         const updateText = await updateTextTodo(todoId, todoItem.value);
+        console.log(updateText);
         showModal(updateText);
-        arrayAllTodo[arrElementId].text = text;
+        arrayAllTodo[arrElementId].text = todoItem.value;
         render();
-        //getTodos();
       }
     }
   };
 
   const removeAllCheckElementArr = async (event) => {
     event.preventDefault();
-    const deleteAll = await deleteAllCheckedTodo();
-    showModal(deleteAll);
-    currentActivePage = currentPage = 1;
-    getTodos();
+    if (arrayAllTodo.length) {
+      showLoader();
+      const deleteAll = await deleteAllCheckedTodo();
+      showModal(deleteAll);
+      const newArr = arrayAllTodo.filter(todo => !todo.isChecked);
+      arrayAllTodo = newArr;
+      getNumberPages(arrayAllTodo.length);
+      currentActivePage = currentPage = 1;
+      render();
+    }
   };
 
   const checkAllElementArr = async (event) => {
+    event.preventDefault();
+    checkAll.disabled = true;
+    showLoader();
     const check = await checkAllTodo(event.target.checked);
     showModal(check);
-    arrayAllTodo.forEach(todo => todo.isChecked = event.target.checked);
+    console.log(event.target.checked);
+    console.log(checkAll.checked);
+    arrayAllTodo.forEach(todo => todo.isChecked = !event.target.checked);
+    checkAll.checked = !event.target.checked;
     render();
-    //getTodos();
   };
 
-  const showModal = (message) => {
-    if (message !== 'delete one todo' 
-      && message !== 'delete all checked todo' 
-      && message !== 'update check all completed') {
-      if (typeof message === 'string') {
-        textModalWindow.textContent = message;
-        modalWindow.style.opacity = '1';
-        modalWindow.style.visibility = 'visible';
-        setTimeout(() => closeModal(), TIME_OF_APPEARANCE_MODAL);
-      }
-    }
+  const showModal = (error) => {
+    if (Array.isArray(error) || typeof error !== 'string') return;
+    if (typeof error === 'string' && error.includes('{')) {
+      const objError = JSON.parse(error);
+      textModalWindow.textContent = objError.message;
+      modalWindow.style.opacity = '1';
+      modalWindow.style.visibility = 'visible';
+      setTimeout(() => { closeModal(); getTodos() }, TIME_OF_APPEARANCE_MODAL);
+    } 
   };
 
   const closeModal = () => {
     modalWindow.style.opacity = '0';
     modalWindow.style.visibility = 'hidden';
   };
+
+  const showLoader = () => {
+    containerTodo.innerHTML = '';
+    const loader = 
+      `<div id="loader-container">
+        <div id="loader"></div>
+      </div>`;
+    containerTodo.innerHTML += loader;
+  }
 
   getTodos();
 
